@@ -18,7 +18,6 @@ int prev_add[300][300][300]={0};
 // 1 = is the value to be subracted
 int ex_clause[100][2]={0};
 
-//fdsa
 
 //change
 int s_var[300]={0};
@@ -27,7 +26,7 @@ int n_var[300]={0};
 int st_ch=0;
 int var_tab[200];
 
-
+//this adds a clause to the ones being checked
 void var_tab_add(int clause_a)
 {
 for(int x=1;x<=clause[clause_a][0];x++)
@@ -38,6 +37,7 @@ for(int x=1;x<=clause[clause_a][0];x++)
 }
 }
 
+//this deletes the clauses of the ones being checked
 void var_tab_del(int clause_d)
 {
 for(int x=1;x<=clause[clause_d][0];x++)
@@ -59,6 +59,9 @@ for(int x=1;x<=clause[clause_d][0];x++)
 }
 return(var_check);
 }
+
+
+// this looks through the stored clauses to see how many variables already exist
 
 int indie_var(int root,int k,int i,int sub)
 {
@@ -120,6 +123,8 @@ printf("this sub variable %i\n",clause[sub][x]);
 return(replicant);
 }
 
+//this compares the variables amongst two clauses
+
 int match(int a, int b)
 {
 int mat=0;
@@ -163,6 +168,9 @@ else if(pol!=0)
 return -1;
 }
 }
+
+//this modifies a branch of the set
+//this is to be changed/superseded 
 
 int scale(int root, int i,float replace, long long result_s,float result_scale)
 {
