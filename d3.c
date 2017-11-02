@@ -18,7 +18,7 @@ int prev_add[300][300][300]={0};
 // 1 = is the value to be subracted
 int ex_clause[100][2]={0};
 
-//
+//fdsa
 
 //change
 int s_var[300]={0};
