@@ -275,24 +275,20 @@ int result8=0;
 int result9=0;
 int flap=0;
 
+
+//this is for the conflicted variables to be deleted
 if(result==-1)
 {
-
-
-
-//printf("this is not included k %i i %i\n",k,i);
-rem_clause[0]++;
-rem_clause[rem_clause[0]]=con[root][i][0];
+	rem_clause[0]++;
+	rem_clause[rem_clause[0]]=con[root][i][0];
 }
-
-//store this to replace prev_result[i];
 
 if (result!=-1)
 		{
 ce=var_tab_check(con[root][i][0]);
 
-
 //this needs updating
+//what is the 4 for?
 result=4-ce;
 
 d=m/pow(2,result);
@@ -320,18 +316,22 @@ int th=indie_var(root,j,i,0);
 
 printf("***th= %i \n",th);
 
+// for the first replace 
+pk=pk+first_replace/2;
+printf("first_replace == %f \n", first_replace);
+
 if(th==4)
 {
-// if there are four conjoined set of variables, this removes zero
-printf("this is the modifier");
-//the modifier is here
+	// if there are four conjoined set of variables, this removes zero
+	printf("this is the modifier");
+	//the modifier is here
 
-pk=pk+first_replace*2;
+	//pk=pk+first_replace*2;
 
-//pk=pk+450*2;
-//pk=pk+2*2;
+	//pk=pk+450*2;
+//	pk=pk+225*2;
 
-}
+	}
 }
 
 // for the rest, scale it
@@ -432,32 +432,11 @@ branch_change++;
 
 }
 
-//if first
-/*
-if(first_subset==1)
-{
-
-//prev_add[root][j][i]=add-result5;
-int test10=match(con[root][j][0], start);
-printf("\n \ntest10 %i \n\n",test10);
-
-int test11=match(con[root][i][0], start);
-printf("test11 %i \n\n",test11);
-//first_replace=first_replace/
-result4=result4+first_replace/pow(2,4);
-
-
-int first=prev_add[root][j][i-1];
-//second=prev_add[root][i][i-1]
-first_subset++
-}
-*/
-
+//this works but is to be replaced
 if(first_subset==1)
 {
 /*sub_tab[j][i][0]=pow(2,result);
 sub_tab[j][i][1]=d-result4;
-*/
 
 int scale2=scale(root, i, 56,3,result4);
 int ce2=var_tab_check(con[root][i][0]);
@@ -482,6 +461,8 @@ first_subset=0;
 second_subset=1;
 
 st_subset=1;
+*/
+
 }
 
 if(st_subset==0)
