@@ -319,7 +319,7 @@ printf("***th= %i \n",th);
 // for the first replace 
 pk=pk+first_replace/2;
 printf("first_replace == %f \n", first_replace);
-
+//fsa	
 if(th==4)
 {
 	// if there are four conjoined set of variables, this removes zero
@@ -839,32 +839,24 @@ loop_count++;
 pos_t[0]++;
 pos_t[j]=left;
 
-//printf("loop count %i\n connected clauses %i\n", loop_count,con[j][0][0]);
-	//exist=0;
 	remain=remain+left;
 
-//printf("loop_count %i\nconnectors %i\n",loop_count,con[j][0][0]);
-//printf("exist %li\n",exist);
 }
 
 
 for(int t=1;t<=9;t++)
 {
 printf("n_var %i = %i\n",t,prev_add[6][4][t]);
-//printf("s_var %i = %i\n",t,s_var[t]);
-//
 }
 
 for(int t=1;t<=15	;t++)
 {
 printf("    stored_v[%i] = %f \n",t,stored_v[t]);
-//
 }
 
 for(int t=1;t<=6	;t++)
 {
 printf("    subtab[4][3][%i] = %i \n",t,sub_tab[6][5][t][1]);
-//
 }
 
 printf("save %i \n",saved[1]);
