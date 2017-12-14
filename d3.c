@@ -347,6 +347,7 @@ int st_pk=0;
 			//for(int q=mod_table[0][0]; q<=mod_table[0][1]; q++)
 			//{
 			//}
+
 				
 				sim=var_tab_check(con[root][z][0]);
 				 sim2=con[root][z][1]-sim;
