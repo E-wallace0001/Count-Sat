@@ -8,6 +8,8 @@ sub_tab can lose the root as this won't change
 make sure it's capable for other clause sizes other than 4
 
 
+todo sec_sub can be memory optimized
+
 
 */
 
@@ -16,14 +18,11 @@ make sure it's capable for other clause sizes other than 4
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-int tem=0;
 int amount=0;
 int loop_count=0;
 int variable[132615][6]={0};
 int clause[400][400]={0};
 int con[400][200][4]={0};
-//int connections[400]={0};
-int mat_store[1000]={0};
 int pos_t[1000]={0};
 float stored_v[200]={0};
 int prev_add[300][300][300]={0};
@@ -108,7 +107,7 @@ printf("this k variable %i\n",clause[k][x]);
 }
 
 for(int x=1;x<=clause[i][0];x++)
-{
+{ 
 printf("i var %i\n",clause[i][x]);
 
 indie_check[abs(clause[i][x])]++;
@@ -149,7 +148,6 @@ int mat=0;
 int pol=0;
 int one=1;
 int ze=-1;
-mat_store[0]=0;
 //variable one
 for(int x=1;x<=clause[a][0];x++)
 {
@@ -228,9 +226,6 @@ long int result3=0;
 // if there are 4 or more independant variables that clash, this clause would have not taken anything, stipulating that it would take 4 quarters
 // not sure if 4 is dependant on the amount of variables with in the clause or if it is based  
 
-int saved[300]={0};
-int t_clause[100][100][1]={0};
-int st_c=0;
 //sub_tab[trunk][branch][primary/secondary]
 int sub_tab[200][200][200][3]={0};
 
@@ -242,33 +237,21 @@ long long result=0;
 
 long long add=0;
 long long d=0;
-long int in_s=0;
-long int in_k=0;
 float result4=0;
 long long add2=0;
 int count=0;
 float result5=0;
 loop_count=0;
-long long match3=0;
 long int typ=0;
-int flip=0;
+;
 int matt =0;
 int rem =0;
 int result_r=0;
-int result6=0;
-int sum=0;
 int first_subset=0;
 int start=0;
 int second_subset=0;
-int tem=0;
-int num2=0;
-int num3=0;
-int num4=0;
-int num5=0;
-int branch_change=0;
-int branch=0;
-int init_val=0;
-int ce =0;
+
+int ce=0;
 
 int st_subset=0;
 //instruction table
@@ -277,8 +260,12 @@ int inst_tab[200][5]={0};
 float first_replace=0;
 
 int rem_clause[200]={0};
-int t_rem=0;
-//printf("k = %i\n",k);
+
+
+// [j][i][start]
+int sec_sub[100][100][100]={0};
+int cor_diff=0;
+
 	for (int i=1;i<k;i++)
 	{
 
@@ -293,13 +280,14 @@ int result8=0;
 int result9=0;
 int flap=0;
 
-
+int sub_retract=0;
 //this is for the conflicted variables to be deleted
 if(result==-1)
 {
 	rem_clause[0]++;
 	rem_clause[rem_clause[0]]=con[root][i][0];
 }
+int add_pk=0;
 
 if (result!=-1)
 		{
@@ -316,54 +304,74 @@ add=add+d;
 int pk=prev_result[i];
 
 
-if(st_subset==1)
-{
-//second_subset==1;
-//pk = prev_add[root][i][start-1];
-//printf("pk %i \n",pk);
-}
-
-
 //stat of second
 
 if(second_subset==1)
 {	
-//sec_sub[x][z]
-int sec_sub[100][100][5]={0};
+
 	int ss_beg=0;
 int sim=0;
 int sim2=0;
 int st2=0;
 int st_pk=0;
+//pk=prev_add[root][j][start];
+
 	for(int z=start;z<i;z++)
 	{
-		var_tab_add(start);
-		printf("this is the second subset  i %i ,z %i \n",i,z);
+		var_tab_add(con[root][i][0]);
+		var_tab_add(con[root][start][0]);
+		printf("this is the second subset  i %i ,z %i pk %i\n",i,z,pk);
 
 		if(ss_beg!=0)
 		{
+			printf("\n this is the second subset lot x %i\n",z);
 			//for each for modification to be made
 			// to be finished
 			//for(int q=mod_table[0][0]; q<=mod_table[0][1]; q++)
 			//{
 			//}
 
-				
+			printf("\npk 65%i %i\n",z,sub_tab[root][i][z][1] );
 				sim=var_tab_check(con[root][z][0]);
-				 sim2=con[root][z][1]-sim;
-				printf("this is the sim %i %i \n",var_in_tab,sim);
-				printf("\n this is the second subset lot x %i\n",z);
-				//printf("con root %i \n",sub_tab[root][i][t][1]);
-				//pk=pk-sub_tab[root][j][z][1];
-				st_pk=sec_sub[i][start][start]/pow(2,sim2);
-				if(ss_beg==2){st_pk=st_pk-st_pk/16;}	
-				sec_sub[i][start][0]=st_pk;
+				sim2=con[root][z][1]-sim;
+				printf("this is the sim %i %i \n",sim2,sim);
+
+				if(sim!=0)
+				{
+					printf("we have sub-subset\n");
+				}
+			
 				printf("st_pk %i \n", st_pk);
-				//if(z==3){st_pk=st_pk-8;}
-				st2=st2+st_pk;
-				
-				pk=pk-st_pk;
 				ss_beg++;
+
+
+				cor_diff=sec_sub[i][0][start]/pow(2,sim2);
+				printf(" sub : cor_diff %i \n", cor_diff);
+				if(root==7)
+				{
+				if(j==6)
+				{
+				if(i==5)
+				{
+				if(z==4)
+				{
+				
+				printf(" this\n\n\n\n");
+				//cor_diff-=90;
+				//pk+=80;
+				}}}}
+
+
+
+				pk-=cor_diff;
+				sec_sub[i][z][start]=cor_diff;
+				sec_sub[i][0][start]-=cor_diff;
+
+for(int t=1;t<=6;t++)
+{
+printf("    sec_sub[%i][0][1] = %i \n",t,sec_sub[t][0][1]);
+}
+				printf(" sec sub %i \n", sec_sub[z][0][start]);
 			
 		}
 	
@@ -372,94 +380,109 @@ int st_pk=0;
 			//pk=pk+first_replace;
 			sim=var_tab_check(con[root][z][0]);
 			sim2=con[root][z][1]-sim;
+			
+			printf("pk 531 %i\n",sub_tab[root][i][start][1] );
 			printf("this is sim1 %i\n", sim2);
-			sec_sub[i][start][start]=sub_tab[root][i][start][1];
-			pk=pk+sec_sub[i][start][start];
-			printf("ss beg pk %i first replace %f \n",pk,first_replace/2);
+
+			printf("ss beg pk %i first replace %f	 pl_start %i \n",pk,first_replace,sub_tab[root][i][start][1]);
+
+			//correct value manipluaton
+			//difference between what is and what should be
+			cor_diff=first_replace-prev_add[root][i][start];
+			sub_retract=cor_diff;
+			printf("cor_diff = %i \n", cor_diff);
+			sec_sub[i][0][start]=cor_diff;
+			sec_sub[i][start][start]=cor_diff;
+pk+=cor_diff;
 			ss_beg++;
+			add_pk+=sub_tab[root][i][start][1];
 		}
 		var_tab_del(start);
-
+var_tab_del(con[root][i][0]);
 	}
+//68*2	pk=pk+180;
 	printf("\n\nsecond subset is a go go  pk=%i\n\n",pk);
 
 }
+printf("add_pk %i \n", add_pk);
 
 //end of second
 
 if(first_subset==1)
 {
-first_subset=0;
-second_subset=1;
-// add all the previous ones to the test table
-//pk = prev_add[root][i][start-1];
-printf("fst pk %i \n",pk);
-printf("\n fst result under test %lli \n", result);
+//check how many state changes there
+	first_subset=0;
+	second_subset=1;
+	// add all the previous ones to the test table
+	//pk = prev_add[root][i][start-1];
+	printf("fst pk %i \n",pk);
+	printf("\n fst result under test root %i, j %i,i %i,start %i result%lli \n",root, j,i,start, result);
 
-// check to see how man replicants
-int th=0;
-indie_var(root,j,i,0);
+	// check to see how man replicants
+	int th=0;
+	//th=indie_var(root,j,i,1);
+	var_tab_add(i);
+	th=var_tab_check(start);
+	var_tab_del(i);
+	printf("***th= %i \n",th);
 
-printf("***th= %i \n",th);
+	// for the first replace 
+	pk=pk+first_replace;
+	pk=pk-first_replace/pow(2,th);
+	cor_diff=first_replace-prev_add[root][i][start];
 
-// for the first replace 
-pk=pk+first_replace/2;
+	sec_sub[i][0][start]=cor_diff;
+	sub_retract=first_replace;
 
+	printf("first_replace == %f \n", first_replace);
+	//fsa	
+		if(th==4)
+		{
+			// if there are four conjoined set of variables, this removes zero
+			printf("this is the modifier");
+			//the modifier is here
 
-printf("first_replace == %f \n", first_replace);
-//fsa	
-if(th==4)
-{
-	// if there are four conjoined set of variables, this removes zero
-	printf("this is the modifier");
-	//the modifier is here
+			//pk=pk+first_replace*2;
 
-	//pk=pk+first_replace*2;
+			//pk=pk+450*2;
+		//	pk=pk+225*2;
 
-	//pk=pk+450*2;
-//	pk=pk+225*2;
+			}
+		}
 
-	}
-}
-
-// for the rest, scale it
-//if(root==6){ if(j==5){ if(i==4){ con[root][i][1]=con[root][i][1]-1;}}}
-result3=pk*pow(2,con[root][i][1]);
-result4=(result3/p/pow(2,result));
-
-
-printf("result4 %f \n\n",result4);
-
-int scale1=0;
-int num1=0;
-int clim=1;
-int num0=0;
-int match4=0;
-
-printf("root %i j %i i %i result %lli result3 %li result4 %f p %lli \n",root,j,i,result, result3, result4,d);
+	// for the rest, scale it
+	//if(root==6){ if(j==5){ if(i==4){ con[root][i][1]=con[root][i][1]-1;}}}
+	result3=pk*pow(2,con[root][i][1]);
+	result4=(result3/p/pow(2,result));
 
 
+	printf("result4 %f \n\n",result4);
+
+	int num0=0;
+
+	printf("root %i j %i i %i result %lli result3 %li result4 %f p %lli \n",root,j,i,result, result3, result4,d);
 
 
-if(st_subset==0)
-{
- if(result_r>result)
+
+
+	if(st_subset==0)
 	{
-	s_var[n]=1;
-	printf("result under test %i \n", ce);
-	start=con[root][i][0];
-	st_subset=1;
-	first_subset=1;
-	//second_subset=1;
-	 s_var[k]=root;
-	saved[0]++;
-	sum=1;
-	first_replace=d-result4;
-	inst_tab[con[root][i][0]][1]=1;
-	printf("initial root %i j %i i %i %f \n",root,j,i,first_replace);
-	//saved[saved[0]]=prev_result[i];
+	 if(result_r>result)
+		{
+		s_var[n]=1;
+		printf("result under test %i \n", ce);
+		start=con[root][i][0];
+		st_subset=1;
+		first_subset=1;
+		//second_subset=1;
+		 s_var[k]=root;
+
+		first_replace=d-result4;
+		inst_tab[con[root][i][0]][1]=1;
+		printf("initial root %i j %i i %i %f \n",root,j,i,first_replace);
+
+		}
 	}
-}
 
 result5=result5+result4;
 
@@ -493,11 +516,13 @@ int pr=0;
 	
 add2=add-result5;
 
+int kresult=d-result4;
+
 //printf("\n\n add %i\n\n add2 %i\n\n result! %i \n\n",add,add2,result5);
 	//result3=0;
 
 
-printf(" root %i j%i add2 %lli\n\n", root,j,add2);
+printf(" root %i j%i add2 %lli\n kresult %i\n", root,j,add2,kresult);
 
 return add2;
 }
@@ -821,7 +846,7 @@ pos_t[j]=left;
 
 for(int t=1;t<=9;t++)
 {
-printf("n_var %i = %i\n",t,prev_add[6][4][t]);
+printf("n_var %i = %i\n",t,prev_add[5][4][t]);
 }
 
 for(int t=1;t<=15	;t++)
@@ -834,7 +859,6 @@ for(int t=1;t<=6	;t++)
 printf("    subtab[4][3][%i] = %i \n",t,sub_tab[5][4][t][1]);
 }
 
-printf("save %i \n",saved[1]);
 printf("variables %i\n", variable[0][0]);
 all=all-remain;
 printf("possibilities %lli \n",all); 
