@@ -5,7 +5,7 @@
 
 typedef struct node{
 	int data;
-	int first;
+	struct node *first;
 	struct node *previous;
 	struct node *next;
 } node;
@@ -18,6 +18,7 @@ static inline node* create(int data, node* previous, node* next){
 		printf("error creating a new node. \n");
 		exit(0);
 	}
+	new_node->first = previous->first;
 	new_node->data = data;
 	new_node->next = next;
 	new_node->previous = previous;
@@ -44,10 +45,16 @@ static inline node* append(node* head, int data){
 
 // relase from list
 static inline void pop(node* cursor){
-	node* next = cursor -> next;
-	next -> previous= cursor -> previous;
-	node* prev = cursor -> previous;
-	prev -> next = cursor -> next;
+	if(cursor->next!=NULL){
+		node* next = cursor -> next;
+		next -> previous= cursor -> previous;
+		node* prev = cursor -> previous;
+		prev -> next = cursor -> next;
+	}
+	else{
+		cursor -> previous =NULL;
+	}
+
 	free(cursor);
 }
 
