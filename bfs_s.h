@@ -12,10 +12,13 @@ static inline layer* set_layer(int num, int lim){
 return new_layer;
 }
 
-void bfs_graph(int, layer*, variable_pos* );
+variable_pos* set;
 
-bool clause_visited[300];
+variable_pos* bfs_graph(int, layer*,variable_pos*,variable_pos* );
+
+bool clause_visited[9000];
 
 void init_graph();
+int new_old_clause[8000];
 
 #endif

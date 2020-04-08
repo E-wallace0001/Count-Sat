@@ -1,11 +1,17 @@
-#ifndef INFINI_TREE_H
-#define INFINI_TREE_H
-
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <stdbool.h>
+#include "var_pos.h"
+#include "bfs_s.h"
+#include "stest.h"
+#include "clause_func.h"
+#include "infini_tree.h"
 #include <gmp.h>
 // node structure
 
-
+/*
 typedef struct node{
 	mpz_t data;
 	mpz_t removed;
@@ -70,9 +76,6 @@ static inline node* append_layer(int clause, node* head,node* previous_layer, mp
 
 static inline node* append_clause(int clause, node* head, node* previous_layer,mpz_t data, mpz_t removed_data,int size){
 
-
-//if(head==NULL){printf("no node\n");exit(0);}
-
 	node* new_node=create(clause, data,NULL, previous_layer,head,NULL,removed_data,size);
 	
 	if(head!=NULL){
@@ -91,16 +94,85 @@ static inline node* append_clause(int clause, node* head, node* previous_layer,m
 
 }
 
-static inline node* prepend_clause(int , node*);
+static inline node* prepend_clause(int clause, node* head){
+
+	node* new_node=create(clause, 0,NULL, NULL,NULL,head,0,0);
+	
+	if(head!=NULL){
+		head->first_clause->end=NULL;
+		head->previous=new_node;
+		
+	}
+	else{
+		new_node->first_clause=new_node;
+	}
+
+	head = new_node;
+	return head;
+}
 
 
+*/
 // relase from list
-static inline void pop(node*);
+static inline void pop(node* cursor){
+	if(cursor->next!=NULL){
+		node* next = cursor -> next;
+		next -> previous= cursor -> previous;
+		node* prev = cursor -> previous;
+		prev -> next = cursor -> next;
+	}
+	else{
+		cursor -> previous =NULL;
+	}
 
-static inline int count(node* );
+	free(cursor);
+}
 
-int count_node(node* );
-void dispose(node*);
+static inline int count(node* head){
+	
+	int count=0;
+	node *tmp = head;
+	
+	while(tmp!=NULL){
+		count++;
+		tmp= tmp->next;
+	}
+	return (count);
+}
+int count_node(node* head){
+	
+	int count=0;
+	node *tmp = head;
+	
+	while(tmp!=NULL){
+		count++;
+		tmp= tmp->next;
+	}
+	return (count);
+}
+
+void dispose(node* head){
+	node *cursor, *tmp;
+while(1){
+	
+	if(head->next!=NULL){
+		cursor=head;
+		head=head->next;
+		free(cursor);
+			if(head->next_layer!=NULL){head=head->next_layer;}
+		continue;
+	}
+	if(head->previous_layer!=NULL){
+		cursor=head->next;
+		head=head->previous_layer;
+		free(cursor);
+		continue;
+	}
+break;
+
+}
 
 
-#endif
+
+}
+
