@@ -100,6 +100,7 @@ void halt(){
 
 //interject code to look at the current state of a node
 void debug(node *head){
+if(head==NULL){printf(" DEBG NUL\n");exit(0);}	
 char input;
 while (1){
 
@@ -200,6 +201,7 @@ inline void var_tab_del(int *clause_d)
 	for(int x=clause_size[*clause_d];x!=0;x--){
 		clause_var++;
 
+if(counted_set[*(variables+abs(*clause_var))]==1){continue;}
 
 			
 		if(*(variables+abs(*clause_var))!=0)
@@ -519,7 +521,7 @@ typedef struct determiner_return{
 
 bool clause_contains_set(int clause){
 	for(int variable=clause_size[clause];variable!=0;variable--){
-	//	if(set_var[abs(variable_connections[clause][variable])]==1) return(1);
+		if(set_var[abs(f_variable_connections[clause][variable])]==1) return(1);
 	}
 return(0);
 }
@@ -583,11 +585,11 @@ int p=0;
 
 		//	if the variable has already been accounted for, skip
 		if(set_variable[abs(variable_connections[clause][q])]!=0){
-			continue;		
+			break;;		
 		}
 		
 
-		if(set_var[abs(variable_connections[clause][q])]==1){ break;}
+		//if(set_var[abs(variable_connections[clause][q])]==1){ break;}
 		
 			
 		//if the variable mateches before the start
@@ -600,8 +602,8 @@ int p=0;
 		//previous clauses that contain this variable
 		link=variable_position[abs(variable_connections[clause][q])];
 
-//		if(count_var_pos(link)==1)continue;
-//if(var_tab_check(&link->clause).connections==-1){continue;;}
+		if(count_var_pos(link)==1)continue;
+if(var_tab_check(&link->clause).connections==-1){continue;;}
 
 		//link=link->first;
 		while(link!=NULL){
@@ -613,8 +615,8 @@ link=link->next;
 continue;
 }
 
-			if(clause_contains_set(abs(link->clause))==0){
-				break;
+			if(clause_contains_set(abs(link->clause))==1){
+//break;
 			}
 
 			if(link->next && link->next->clause<clause){
@@ -1234,6 +1236,13 @@ void post_branch_correct(int not_start,int init_start,int init_end, int con,node
 	
 	temp_connections=var_tab_check(&temp_layer->clause);
 	var_connections=var_tab_check(&init_start);
+	printf("start:%i end:%i var con %i not %i \n",init_start,init_end, head->previous_layer->clause, not_start);
+
+	if(clause_size[init_start]-var_connections.connections==0){
+
+//exit(0);
+//		return;
+	}
 
 	if(var_connections.connections>=0){
 
@@ -1242,14 +1251,14 @@ void post_branch_correct(int not_start,int init_start,int init_end, int con,node
 
 			//No connections
 			//Scales the last data
-			clause_comp=compare_clause(init_start,init_end);
 
+			clause_comp=compare_clause(init_start,init_end);
+clause_comp=clause_size[init_end]-var_connections.connections;
 			//total=total/pow(2,clause_size[init_end]);
 			mpz_divexact_ui(total,total,pow(2,clause_size[init_end]));
 
 			//removed=temp_layer->removed/pow(2,clause_size[init_end]-clause_comp);
-			mpz_divexact_ui(removed, temp_layer->removed,pow(2,clause_size[init_end]-(clause_comp)));
-
+			mpz_divexact_ui(removed, temp_layer->removed,pow(2,clause_size[init_end]-var_connections.connections));
 			//total+=removed;
 			mpz_add(total,total,removed);
 			
@@ -1597,18 +1606,18 @@ exit(0);
 				// Find a connection to variables in this cluase, and determine what to do next
 				determiner=determiner_solve(chain,clause_temp,0, NULL);
 printf("%i determiner.command %i %i \n",clause_temp->clause, determiner.command,determiner.start);
-//if(clause_temp->clause==3){exit(0);halt();determiner.command=0;determiner.end=0;determiner.start=1;}
+halt();
+//if(determiner.command==1){halt();determiner.command=1;determiner.end=1;determiner.start=2;}
 				switch(determiner.command)
 				{
 					case 0:
 						// Doesn't connect to any clause
 
-						mpz_divexact_ui(result, clause_temp->previous->data,pow(2,clause_size[i]));
+						mpz_divexact_ui(result, clause_temp->previous->data,pow(2,clause_size[i]-var_connections.connections));
 
 					break;
 					case 1:
 						// Connects	with a clause that exists with in the range of this layer					
-halt();
 						var_tab_add(&clause_temp->clause);
 						post_branch_correct(determiner.end,determiner.start,clause_temp->clause,0,clause_temp);
 						// Check return of post branch, and retrieve data from the tree
@@ -1662,10 +1671,11 @@ gmp_printf(" %Zd %Zd %Zd \n", union_sub,sum2,result);
 	
 				
 			//if the start, set the inital points
-			mpz_set(sum,recursive_total);
-
+			
 			if(layer==1){
+mpz_set(sum,recursive_total);
 
+		gmp_printf("total %Zd  possible  var count %i   \n",sum,i);
 				clause_node=append_layer(i,previous_layer,previous_layer,sum,clause_connections);
 				mpz_set(clause_node->removed,sum);
 				mpz_set(sum2,recursive_total);
@@ -1709,12 +1719,13 @@ clause_node=NULL;
 
 	clause_node=append_clause(start, clause_node,NULL,sub_total,nul,variable_connections[clause_count][0]);
 	pnt=clause_node;
+		gmp_printf("total %Zd  possible %Zd var count %i   \n",sub_total,all_possible,variable_count);
 	//recursion begins
 	recursive_check(0,1,clause_count,sub_total,clause_node);
 		
 	if(!clause_node->next_layer){
 		mpz_set(pnt->data,sub_total);
-//		gmp_printf("total %Zd  possible %Zd var count %i   \n",sub_total,all_possible,variable_count);
+		gmp_printf("total %Zd  possible %Zd var count %i   \n",sub_total,all_possible,variable_count);
 
 //		printf("there'se no clauses\n");
 		return;

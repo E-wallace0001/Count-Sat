@@ -17,7 +17,7 @@ variable_pos* set;
 variable_pos* bfs_graph(int, layer*,variable_pos*,variable_pos* );
 
 bool clause_visited[9000];
-
+bool counted_set[8000];
 void init_graph();
 int new_old_clause[8000];
 

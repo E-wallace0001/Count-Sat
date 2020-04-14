@@ -10,6 +10,8 @@ int clause_size[127000];
 int f_clause_size[127000];
 bool set_var[40000];
 
+int var_tab[1000];
+
 long set_variable[127000];
 
 struct variable_pos* variable_position[4001];

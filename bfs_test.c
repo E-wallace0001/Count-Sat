@@ -118,6 +118,7 @@ continue;
 		set=set->first;
 		printf(" i %i \n", i);
 		printf(" split-------------------------\n");
+
 //copy_clause(1,set);;
 
 
@@ -233,17 +234,100 @@ counted_for++;
 
 
 //var_tab_add(&clause_count);
-//set=copy_clause(ones[1],set);;
+//set=copy_clause(ones[1],set);
+
+/*
+
+k=f_variable_connections[ones[1]][1];
+set_variable[abs(k)]=k;
+counted_set[abs(k)]=1;
+var_tab[abs(k)]++;
+counted_for++;
+
+
+//set=copy_clause(ones[2],set);
+k=f_variable_connections[ones[2]][1];
+set_variable[abs(k)]=k;
+counted_set[abs(k)]=1;
+var_tab[abs(k)]++;
+counted_for++;
+
+//set=copy_clause(ones[3],set);
+
+k=f_variable_connections[ones[3]][1];
+set_variable[abs(k)]=k;
+counted_set[abs(k)]=1;
+var_tab[abs(k)]++;
+counted_for++;
+*/
+
+set=copy_clause(ones[1],set);
+set=copy_clause(ones[2],set);
+
+
+set=copy_clause(ones[3],set);
+
+//create_new_clause();
+//add_to_clause(-5,set);
+//clause_count--;
+
+
+
+//k=	f_variable_connections[ones[1]][1];
+//create_new_clause();
+//add_to_clause(k,set);
+
+
+/*
+k=f_variable_connections[ones[2]][1];
+create_new_clause();
+add_to_clause(k,set);
+*/
+
+printf(" 1 %i 2: %i 3: %i \n",f_variable_connections[ones[3]][1],
+f_variable_connections[ones[2]][1],f_variable_connections[ones[1]][1]);
+halt();
+//exit(0);
+null_add(set);
+
+printf("%i \n", k);
+	
+
+//set_variable[abs(k)]=k;
+//counted_set[abs(k)]=1;
+//var_tab[abs(k)]++;
+//counted_for++;
+/*
+k=f_variable_connections[ones[2]][1];
+//create_new_clause();
+//add_to_clause(k,set);
+set_variable[abs(k)]=k;
+counted_set[abs(k)]=1;
+var_tab[abs(k)]++;
+counted_for++;
+*/
+//variable_count--;
+
+//set=copy_clause(ones[2],set);
+
+//set=copy_clause(ones[3],set);
+printf("clause_size %i \n", f_variable_connections[ones[1]][1]);
+
+//var_tab_add(&set->end->clause);
+//variable_count--;
+
+set=set->first;
+//clause_count--;
 solve();
 
 
 
-gmp_printf(" %Zd %Zd \n",clause_node->data,clause_node->removed);
 //clause_node->next_layer=NULL;
 
 //free((clause_node));
 printf(" this is the count %i \n", count_node(clause_node->next_layer));
-clause_node=clause_node->next_layer;
+//clause_node=clause_node->next_layer;
+gmp_printf("clause %i Data %Zd  Removed%Zd \n",clause_node->clause,clause_node->data,clause_node->removed);
 
 //debug_pos(set);
 debug(clause_node);
