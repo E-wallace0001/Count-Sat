@@ -20,8 +20,6 @@ static inline link_node* link_create(int data, link_node* previous, link_node* n
 		
 	}
 
-	
-
 	//new_node->first=new_node;
 	new_node->data = data;
 	new_node->next = next;
@@ -60,42 +58,42 @@ return(new_node) ;
 //iterate through the list in the main loop
 
 // relase from list
-static inline void link_pop(link_node* cursor){
-link_node* temp;
-		if(cursor->previous!=NULL){
-			if(cursor->next!=NULL){
-printf("%i\n",cursor->next->data);
-				cursor->next->previous=cursor->previous;
-				cursor->previous=cursor->next;
-			}
-			else{
+static inline link_node* link_pop(link_node* cursor){
 
-				if(cursor->previous!=NULL){
-					temp=cursor->previous;
-					temp->next=NULL;
-				}
-			}
-		}
-		else{
-			cursor=NULL;
-		}
+link_node* temp;
+		
+if(cursor->previous!=NULL){
+	if(cursor->next!=NULL){
+		printf("%i\n",cursor->next->data);
+		cursor->next->previous=cursor->previous;
+		cursor->previous=cursor->next;
+		temp=cursor->previous;
+	}else{
+		temp=cursor->previous;
+		temp->next=NULL;
+	}
+}else{
+	if(cursor->next!=NULL){
+		temp=cursor->next;
+		temp->previous=NULL;
+	}
+
+}
 
 free(cursor);
+return(NULL);
 }
 
 static inline int link_count(link_node* head){
-	
+
+	if(head==NULL){printf("null head link count\n");return(0);}
 	int count=0;
-	link_node *tmp = head;
+
+	link_node *tmp = head->first;
 	
-	while(1){
-		if(tmp->next!=NULL){
+	while(tmp!=NULL){
 		count++;
-		tmp= tmp->next;
-		}
-		else{
-			break;
-		}
+		tmp=tmp->next;
 	}
 	return (count);
 }

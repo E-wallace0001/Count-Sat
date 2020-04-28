@@ -12,9 +12,11 @@ static inline layer* set_layer(int num, int lim){
 return new_layer;
 }
 
+void raw();
+
 variable_pos* set;
 
-variable_pos* bfs_graph(int, layer*,variable_pos*,variable_pos* );
+variable_pos* bfs_graph( layer*,variable_pos* );
 
 bool clause_visited[9000];
 bool counted_set[8000];

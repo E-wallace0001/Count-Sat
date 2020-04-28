@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
+
+#include <string.h>
+
 #include "var_pos.h"
 #include "bfs_s.h"
 #include "stest.h"
@@ -34,6 +37,86 @@ void raw(){
 	}
 
 }
+
+bool CheckClauseIsNeg(int clause ){
+int variable;
+	for(int var=f_clause_size[clause];var!=0;var--){
+		variable=f_variable_connections[clause][var];
+		for(int i=1;i<=ones[0];i++){
+			if( abs(variable)==abs(f_variable_connections[ones[i]][1]) && (variable)!=f_variable_connections[ones[i]][1] ){
+				return(1);
+			}
+		}
+	}
+return(0);
+
+}
+	
+
+void Export(){
+
+FILE* fp2;
+fp2=fopen("out.cnf","w");
+
+while(1){
+
+	for(int variable=clause_size[set->clause]; variable!=0;variable--){
+		fprintf(fp2,"%i ", variable_connections[set->clause][variable]);
+	}
+
+	fprintf(fp2,"0\n");
+
+	if(set->next!=NULL){
+		set=set->next;
+	}
+	else{break;}
+}
+
+fclose (fp2);
+}
+
+void SetOnes(){
+int k=0;
+	for(int variable=1;variable<=ones[0];variable++){
+		if(variable_position[abs(f_variable_connections[ones[variable]][1])]->clause==0 ){
+			continue;
+		}
+
+			k=f_variable_connections[ones[variable]][1];
+			set_variable[abs(k)]=k;
+			counted_set[abs(k)]=1;
+			set_var[abs(k)]=1;
+			var_tab[abs(k)]++;
+			counted_for++;
+			
+		
+
+	}
+
+}
+
+
+void ReSetOnes(){
+int k=0;
+	for(int variable=1;variable<=ones[0];variable++){
+		if(variable_position[abs(f_variable_connections[ones[variable]][1])]->clause==0 ){
+			continue;
+		}
+
+			k=f_variable_connections[ones[variable]][1];
+			set_variable[abs(k)]=0;
+			counted_set[abs(k)]=0;
+			set_var[abs(k)]=0;
+			var_tab[abs(k)]--;
+			counted_for--;
+			
+		
+		
+
+	}
+
+}
+
 void init_graph(int ones[]){
 
 //raw();
@@ -43,12 +126,12 @@ void init_graph(int ones[]){
 	variable_pos* temp_clause;	
 	int count=0;
 
-	layer* layer=set_layer(-1,4);
+	layer* layer=set_layer(-1,2);
 printf("ones %i \n ",ones[0]);
 
-int k=0;
+		int k=0;
 
-set= (variable_pos*)malloc(sizeof(variable_pos));
+	set= (variable_pos*)malloc(sizeof(variable_pos));
 
 	for(int i=1;i<=ones[0];i++){
 		layer->num++;
@@ -71,9 +154,8 @@ set= (variable_pos*)malloc(sizeof(variable_pos));
 
 			//coppy all the clauses
 			while(1){
-				//if it's already been accounted for
-				if(clause_visited[temp_clause->clause]==1){
-
+				//if it's already been accounted for || check if allowed
+				if(clause_visited[temp_clause->clause]==1 ){
 					if(temp_clause->next!=NULL){
 						temp_clause=temp_clause->next;
 					}else{
@@ -95,9 +177,9 @@ printf("erro\n");
 				// copy the variably data to the new clause so it can be processed
 				//
 				if(temp_clause->next!=NULL){
-				//clause_visited[temp_clause->clause]=1;
+					//clause_visited[temp_clause->clause]=1;
 
-				inline_visited[temp_clause->clause]=1;
+					inline_visited[temp_clause->clause]=1;
 					temp_clause=temp_clause->next;
 				}else{
 					break;
@@ -114,220 +196,46 @@ continue;
 		clause_visited[temp_clause->clause]=1;
 		//printf(" %i \n",);
 
-		bfs_graph(ones[i], layer,set->first,set->first);
+		bfs_graph(layer,set->first);
 		set=set->first;
 		printf(" i %i \n", i);
 		printf(" split-------------------------\n");
 
-//copy_clause(1,set);;
 
 
-//copy_clause(ones[1],set);
-//variable_count++;
-
-//create_new_clause();
-//add_to_clause(-3,set);
-//var_tab_add(&set->end->clause);
-
-
-//create_new_clause();
-//add_to_clause(-1,set);
-//var_tab_add(&set->end->clause);
-//variable_count--;
-//create_new_clause();
-//add_to_clause(2,set);
-//var_tab_add(&set->end->clause);
-
-//clause_count--;
-
-//var_tab_add(&set->end->clause);
-//copy_removed(set->end->clause,set);
-//counted_for++;
-//null_add(set);
-
-//variable_count--;
-//clause_count--;
-//clause_count--;
-
-//create_new_clause();
-//add_to_clause(-1,set);
-//var_tab_add(&set->end->clause);
-//variable_count--;
-//clause_count--;
-
-
-//set_var[abs(k)]=1;
-//set_variable[abs(k)]=k;
-
-//copy_clause(ones[2],set);
-//set_variable[3]=3;
-//set_var[3]=1;
-//set_variable[abs(k)]=k*-1;
-//var_tab_add(&set->end->clause);
-
-//copy_clause(ones[3],set);
-
-/*
-FILE* fp2;
-fp2=fopen("new2.cnf","w");
-
-while(set!=NULL){
-
-for(int variable=clause_size[set->clause]; variable!=0;variable--){
-fprintf(fp2,"%i ", variable_connections[set->clause][variable]);
-}
-fprintf(fp2,"0\n");
-
-set=set->next;
-}
-
-fclose (fp2);
-printf(" %i \n", f_clause_size[ones[1]]);
-exit(0);
-*/
-
-//set=set->next->previous->end->first->end;
-//clause_count++;
+//copy_clause(ones[i],set);
+printf(" ontes %i %i \n", ones[i],variable_connections[ones[i]][1]);
+//exit(0);
 
 
 
-//copy
-set=set->first;
-
-
-/*
-int k=0;
-for(int j=1;j<=ones[0];j++){
-printf("ones[j] %i\n", f_variable_connections[ones[j]][1]);
-k=f_variable_connections[ones[j]][1];
-set_var[abs(k)]=1;
-set_variable[abs(k)]=k*-1;
-counted_for++;
-}
-
-
-*/
-//int j=9;
-//k=f_variable_connections[ones[1]][1];
-
-//set=copy_clause(ones[1],set);;
-
-/*
-k=f_variable_connections[ones[1]][1];
-
-set_var[abs(k)]=1;
-set_variable[abs(k)]=k*-1;
-counted_for++;
-
-*/
-//k=f_variable_connections[ones[2]][1];
-
-//set_var[abs(k)]=1;
-//set_variable[abs(k)]=k*-1;
-//counted_for++;
-
-//k=f_variable_connections[ones[3]][1];
-
-//set_var[abs(k)]=1;
-//set_variable[abs(k)]=k*-1;
-//counted_for++;
-
-
-//var_tab_add(&clause_count);
-//set=copy_clause(ones[1],set);
-
-/*
-
-k=f_variable_connections[ones[1]][1];
-set_variable[abs(k)]=k;
-counted_set[abs(k)]=1;
-var_tab[abs(k)]++;
-counted_for++;
-
-
-//set=copy_clause(ones[2],set);
-k=f_variable_connections[ones[2]][1];
-set_variable[abs(k)]=k;
-counted_set[abs(k)]=1;
-var_tab[abs(k)]++;
-counted_for++;
-
-//set=copy_clause(ones[3],set);
-
-k=f_variable_connections[ones[3]][1];
-set_variable[abs(k)]=k;
-counted_set[abs(k)]=1;
-var_tab[abs(k)]++;
-counted_for++;
-*/
-
-set=copy_clause(ones[1],set);
-set=copy_clause(ones[2],set);
-
-
-set=copy_clause(ones[3],set);
-
-//create_new_clause();
-//add_to_clause(-5,set);
-//clause_count--;
-
-
-
+copy_clause(ones[i],set);
+null_add(set);
 //k=	f_variable_connections[ones[1]][1];
 //create_new_clause();
 //add_to_clause(k,set);
 
 
-/*
-k=f_variable_connections[ones[2]][1];
-create_new_clause();
-add_to_clause(k,set);
-*/
 
-printf(" 1 %i 2: %i 3: %i \n",f_variable_connections[ones[3]][1],
-f_variable_connections[ones[2]][1],f_variable_connections[ones[1]][1]);
-halt();
-//exit(0);
-null_add(set);
 
-printf("%i \n", k);
-	
+//SetOnes();
 
-//set_variable[abs(k)]=k;
-//counted_set[abs(k)]=1;
-//var_tab[abs(k)]++;
-//counted_for++;
-/*
-k=f_variable_connections[ones[2]][1];
-//create_new_clause();
-//add_to_clause(k,set);
-set_variable[abs(k)]=k;
-counted_set[abs(k)]=1;
-var_tab[abs(k)]++;
-counted_for++;
-*/
-//variable_count--;
 
-//set=copy_clause(ones[2],set);
-
-//set=copy_clause(ones[3],set);
-printf("clause_size %i \n", f_variable_connections[ones[1]][1]);
-
-//var_tab_add(&set->end->clause);
-//variable_count--;
 
 set=set->first;
-//clause_count--;
-solve();
-
-
-
-//clause_node->next_layer=NULL;
+//solve();
 
 //free((clause_node));
-printf(" this is the count %i \n", count_node(clause_node->next_layer));
+//printf(" this is the count %i \n", count_node(clause_node->next_layer));
 //clause_node=clause_node->next_layer;
-gmp_printf("clause %i Data %Zd  Removed%Zd \n",clause_node->clause,clause_node->data,clause_node->removed);
+
+//printf(" ones[i] %i \n", ones[i]);
+//gmp_printf("clause %i Data %Zd  Removed%Zd \n",clause_node->clause,clause_node->data,clause_node->removed);
+
+set=set->first;
+Export();
+set=set->first;
+
 
 //debug_pos(set);
 debug(clause_node);
@@ -336,27 +244,24 @@ debug(clause_node);
 //set_var[abs(f_variable_connections[ones[i]][1])]=0;
 //var_tab_del(&set->first->clause);
 
+//ReSetOnes();
 
 
-
-//debug(clause_node);
-
-//		null_remove(set->first->end);
 		printf("end count %i \n", count_var_pos(set));
 		halt();
 	
 		set=set->first;
+		//	Zero table
+		for(int i =0;i!=8000;i++){
+			inline_visited[i]=0;
+			clause_visited[i]=0;
+		}
+
 		while(set!=NULL){
 			copy_removed(set->clause,set);
 			set=set->next;
 		}
 
-
-		//	Zero table
-		for(int i =0;i!=300;i++){
-			inline_visited[i]=0;
-			clause_visited[i]=0;
-		}
 
 
 
@@ -364,7 +269,7 @@ debug(clause_node);
 	}
 
 }
-variable_pos* bfs_graph(int old_clause, layer* layer,variable_pos* set,variable_pos* old){
+variable_pos* bfs_graph( layer* layer,variable_pos* set){
 
 	variable_pos* first=set;
 	variable_pos* end=set->first->end;
@@ -376,14 +281,13 @@ variable_pos* bfs_graph(int old_clause, layer* layer,variable_pos* set,variable_
 
 	if(layer->num==layer->lim){
 		//layer->num--;
-		printf("layer lim \n");
-		return(set);
+		//printf("layer lim \n");
+		//return(set);
 	}
 
 	printf("firstr/end %i %i old %i  \n", first->clause, end->clause,set->clause);
 	while(first!=NULL){
 
-		printf("test %i %i \n",new_old_clause[first->clause],f_clause_size[new_old_clause[first->clause]]);
 		//	For each of the variables, search for their clauses
 		for(int variable=f_clause_size[new_old_clause[first->clause]];variable!=0;variable--)
 		{
@@ -417,30 +321,15 @@ variable_pos* bfs_graph(int old_clause, layer* layer,variable_pos* set,variable_
 				printf("\n\n\n this bfs found && added %i %i \n",temp_clause->clause,clause_size[temp_clause->clause]);
 
 				//copy the clause if it's connected
-				if(clause_visited[temp_clause->clause]==0 && f_clause_size[temp_clause->clause]>1){
+				if(clause_visited[temp_clause->clause]==0 ){
 					set=copy_clause(temp_clause->clause,set->first->end);
 					clause_visited[temp_clause->clause]=1;
+						
 				}
-							
-				// if the clause of size 1, and hasn't been accounted for, include this has a set variable
-				if(f_clause_size[temp_clause->clause]==1 && counted_set[ abs(f_variable_connections[temp_clause->clause][1]) ]==0){
-					//counted_set[ abs(f_variable_connections[temp_clause->clause][1]) ]=1;
-					//int k=f_variable_connections[temp_clause->clause][1];
-					//set_var[ abs(k) ]=1;
-					//set_variable[abs(k)]=(k)*-1;
-					//counted_for++; 
-printf("ding \n"); halt();
-				}
-				printf(" \n\n\n\n new graph \n");
-				layer->num++;
-				bfs_graph(0, layer, first, NULL);
 
-	if(layer->num==layer->lim){
-		
-		printf("layer lim \n");
-		return NULL;
-	}
-layer->num--;
+				printf(" \n\n\n\n new graph \n");
+//				layer->num++;
+//				bfs_graph(layer, first);
 
 //				inline_visited[temp_clause->clause]=0;	
 //				clause_visited[temp_clause->clause]=0;
@@ -454,7 +343,6 @@ layer->num--;
 				}
 			}
 		}
-
 		//inline_visited[first->clause]=0;
 
 		
