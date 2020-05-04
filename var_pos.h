@@ -17,6 +17,8 @@ typedef struct variable_pos{
 
 // create_pos a new variable_pos
 
+variable_pos* make_clause(int);
+
 variable_pos* create_clause(int ,variable_pos* );
 
 variable_pos* append_variable(int , variable_pos*);

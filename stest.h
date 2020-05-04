@@ -14,11 +14,13 @@ int var_tab[10000];
 
 long set_variable[127000];
 
+//void init_pos(struct variable_pos* table[]);
+
 struct variable_pos* variable_position[6001];
 struct variable_pos* f_variable_position[6001];
 
-int variable_connections[127000][40];
-int f_variable_connections[127000][40];
+int variable_connections[127000][50];
+int f_variable_connections[127000][50];
 
 int clause_count;
 int f_clause_count;
@@ -30,7 +32,7 @@ void halt();
 
 unsigned int nr_variables;
 unsigned int nr_clauses;
-int variable[127000][40];
+int variable[127000][50];
 
 //FILE fp;
 int argc;

@@ -152,6 +152,7 @@ int count_node(node* head){
 }
 
 void dispose(node* head){
+if(head==NULL){printf("null head \n");exit(0);}
 	node *cursor, *tmp;
 while(1){
 	

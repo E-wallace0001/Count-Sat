@@ -67,11 +67,11 @@ long long all=0;
 
 int start=0;
 
-int variable[127000][40]={0};
+int variable[127000][50]={0};
 
 // variable _connections [clause][place]=variable
-int variable_connections[127000][40]={0};
-int f_variable_connections[127000][40]={0};
+int variable_connections[127000][50]={0};
+int f_variable_connections[127000][50]={0};
 
 int connection_count[4000]={0};
 
@@ -229,7 +229,7 @@ typedef struct v_return vReturn;
 
 vReturn var_tab_count(int *clause_d){
 
-	int temp_match[30]={0};
+	int temp_match[50]={0};
 	vReturn alpha={0,0,0};
 	//this is the variables already been added to the table
 	long *variables;
@@ -273,7 +273,7 @@ vReturn var_tab_count(int *clause_d){
 //check to see if variables in clause have been checked
 vReturn var_tab_check(int *clause_d){
 
-	int temp_match[30]={0};
+	int temp_match[50]={0};
 	vReturn alpha={0,0,0};
 	//this is the variables already been added to the table
 	long *variables;
@@ -315,7 +315,7 @@ vReturn var_tab_check(int *clause_d){
 //check to see if variables in clause have been accounted for, whether negated our connects
 vReturn comp_tab_check(int *clause_d){
 
-	int temp_match[30]={0};
+	int temp_match[50]={0};
 	vReturn alpha={0,0,0};
 	//this is the variables already been added to the table
 	long *variables;
@@ -355,7 +355,7 @@ vReturn comp_tab_check(int *clause_d){
 //check to see if variables in clause have been accounted for, whether negated our connects
 vReturn neg_tab_check(int *clause_d){
 
-	int temp_match[30]={0};
+	int temp_match[50]={0};
 	vReturn alpha={0,0,0};
 	//this is the variables already been added to the table
 	long *variables;
@@ -395,7 +395,7 @@ vReturn neg_tab_check(int *clause_d){
 vReturn abs_tab_check(int *clause_d){
 
 
-	int temp_match[30]={0};
+	int temp_match[50]={0};
 	vReturn alpha={0,0,0};
 	//this is the variables already been added to the table
 	long *variables;
@@ -465,7 +465,7 @@ return(count);
 //	search for variable in a given space within head 
 static inline node* clause_search(int start, node* head){
 	bool error=0;
-	//if(head->clause<start){return(head);}
+	if(head->first_clause==NULL){exit(0);}
 	bool reverse=0;
 	head=head->first_clause;
 	vReturn temp_connections;
@@ -473,7 +473,9 @@ static inline node* clause_search(int start, node* head){
 
 	while(head->clause!=start){
 
-		if(reverse==0){
+			if(head->clause>=start){
+				break;
+			}
 			if(head->next!=NULL && head->next->clause<=start){
 				head=head->next;
 			}
@@ -482,19 +484,9 @@ static inline node* clause_search(int start, node* head){
 				break;
 			}
 
-			if(head->clause>=start){
-				break;
-			}
 
-		}
-		else{
-
-			head=head->previous;
-
-			if(head->clause<=start){
-				break;
-			}
-		}
+		
+		
 			
 	}
 
@@ -1387,7 +1379,7 @@ if(var_tab_check(&outer_loop->clause).connections==-1){ printf("outer loop negat
 	clause_comp=compare_clause(outer_loop->clause,inner_loop->clause);
 	var_connections=var_tab_check(&outer_loop->clause);
 
-	if(var_connections.connections==-1)exit(0);
+	if(var_connections.connections==-1){printf("neg1\n");exit(0);}	
 
 	determiner=determiner_solve(chain, outer_layer,init_start ,outer_loop);
 
@@ -1737,8 +1729,8 @@ mpz_set(pnt->data,sub_total);
 //	pnt= (void*)sub_total;
 //mpz_set(pnt->data, sub_total);
 //debug(pnt);
-	gmp_printf("total %Zd \n \n possible %Zd \n\n var count %i   \n",sub_total,all_possible,variable_count);
-exit(0);
+	gmp_printf("\n\n22total %Zd \n \n possible %Zd \n\n var count %i   \n",sub_total,all_possible,variable_count);
+//exit(0);
 }
 
 int main(int argc, char *argv[]){
@@ -1785,10 +1777,12 @@ read_cnf(argv[1]);
 	printf("%i %i\n", clause_count,variable_count); 
 
 
-//init_graph(ones);
-raw();
-solve();
-debug(clause_node);
+init_graph(ones);
+//raw();
+printf("raw complete \n ");
+
+//solve();
+//debug(clause_node);
 printf(" complete \n ");
 //	halt();
 //exit(0);

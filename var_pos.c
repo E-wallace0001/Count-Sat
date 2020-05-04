@@ -24,70 +24,74 @@ void dispose_var_pos(variable_pos *head)
 	}
 }
 
+variable_pos* make_clause(int clause){
+	variable_pos* new_clause = (variable_pos*)malloc(sizeof(variable_pos));
+	if(new_clause==NULL){
+		printf("error creating a new node. \n");
+		exit(0);
+	}
+		new_clause->clause=clause;
+		new_clause->end=new_clause;
+		new_clause->first=new_clause;
+		new_clause->previous=NULL;
+		new_clause->next=NULL;
+	return new_clause;
+}
 
 inline variable_pos* create_clause(int clause,variable_pos* previous){
 	
-	variable_pos* new_variable_pos = (variable_pos*)malloc(sizeof(variable_pos));
-
-	if(new_variable_pos==NULL){
-		printf("error creating a new variable_pos. \n");
-		exit(0);
-	}
-	if(previous)previous=previous->end;
-	new_variable_pos->clause=clause;
+	variable_pos* new_clause=make_clause(clause);
+	variable_pos* tmp;
+	
+//	if(previous)previous=previous->first;
+	
 	if(previous!=NULL ){
 
-		previous->next=new_variable_pos;
-		new_variable_pos->first=previous->first;
-		previous->next=new_variable_pos;
+	new_clause->previous=previous;
 
-		new_variable_pos->previous = previous;
-		previous->first->end=new_variable_pos;
-		previous->end=new_variable_pos;
-		new_variable_pos->end=new_variable_pos;
+	new_clause->first=previous->first;
+	new_clause->next=NULL;
+	previous->next=new_clause;
 
+	new_clause->first->end=new_clause;
+	
 	}
 	else{
+		new_clause->clause=clause;
+		new_clause->end=new_clause;
+		new_clause->first=new_clause;
+		new_clause->previous=NULL;
+		new_clause->next=NULL;
 
-		new_variable_pos->clause=clause;
-		new_variable_pos->end=new_variable_pos;
-		new_variable_pos->first=new_variable_pos;
-		new_variable_pos->end=new_variable_pos;
-		new_variable_pos->previous=NULL;
 	}
 
-	return new_variable_pos;
+	return new_clause;
 }
 
 inline variable_pos* append_variable(int clause, variable_pos* head){
-
+head=head->first->end;
 //	variable_pos* new_variable_pos=create_pos(clause, head);
-	variable_pos* new_variable_pos = (variable_pos*)malloc(sizeof(variable_pos));
+	variable_pos* new_variable_pos;
+//	head=head->first->end;
+	if(head->clause==0){
+		head->clause=clause;
+return head;
+		
+	}else{
+
+	 new_variable_pos = (variable_pos*)malloc(sizeof(variable_pos));
 	if(new_variable_pos==NULL || head==NULL){
 		printf("error creating a new variable_pos. \n");
 		exit(0);
 	}
-	if(head)head=head->end;
-	if(head->clause==0){
+		head->next=new_variable_pos;
+		new_variable_pos->first=head->first;
+		new_variable_pos->previous=head;
+		head->first->end=new_variable_pos;
 		new_variable_pos->clause=clause;
 
-		new_variable_pos->first=head->first;
-		head->first->end=new_variable_pos;
-		head->next=new_variable_pos;
+		new_variable_pos->next=NULL;
 		new_variable_pos->previous=head;
-
-		head->end=new_variable_pos;
-
-	}else{
-		new_variable_pos->clause=clause;
-
-		new_variable_pos->first=head->first;
-		head->first->end=new_variable_pos;
-		head->next=new_variable_pos;
-		new_variable_pos->previous=head;
-
-		head->end=new_variable_pos;
-
 	}
 
 	return new_variable_pos;
@@ -97,51 +101,58 @@ inline variable_pos* append_variable(int clause, variable_pos* head){
 
 // release from list
 void pop_clause(variable_pos* *cursor){
-if(!(*cursor)){printf(" null pass ptr\n");}
+if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 	variable_pos* tmp;
 	variable_pos* st;
+
 	if((*cursor)->previous!=NULL){
-		printf("previous con %i\n",(*cursor)->clause);
-		tmp=(*cursor);
-		tmp=tmp->previous;
-		tmp->next=NULL;
-		tmp->first->end=tmp;
+	//	printf("previous con %i\n",(*cursor)->clause);
+		
+		if((*cursor)->next==NULL){
+			(*cursor)=(*cursor)->previous;
 
+			(*cursor)->first->end=(*cursor);
+		//
+			(*cursor)->next=NULL;
+			free((*cursor)->next);	
+			
 
-		//tmp->clause=5;
-		//(*cursor)->next=NULL;
-		(*cursor)=tmp;
-		free(tmp->next);
+		}else{
+			(*cursor)=(*cursor)->previous;
+			(*cursor)->next=(*cursor)->next->next;
+			free((*cursor)->next->previous);
+			(*cursor)->next->previous=(*cursor);
+			
+							free(*cursor);
+
+		}
 
 	}
 	else{
-printf("prev\n");
+		//if there's not a previous address
+		//printf("prev\n");
 		tmp=(*cursor);
 		if((*cursor)->next!=NULL){
-		(*cursor)=(*cursor)->next;
-		(*cursor)->previous=NULL;
-st=tmp->first;
-while(st!=NULL){
-	st->first=(*cursor);
-if(st->next==NULL) (*cursor)->end=st;
-	st=st->next;
-}
-		tmp=NULL;	
-		free(tmp);
-		
-		}	
-		else{
-			(*cursor)=NULL;
-			free(*cursor);
-
+			(*cursor)=(*cursor)->next;
+			(*cursor)->previous=NULL;
+			free((*cursor)->previous);
+			
+			st=(*cursor)->next;
+			while(st!=NULL){
+				st->first=(*cursor);
+				st=st->next;
+			}	
+		}else{
+				(*cursor)=NULL;
+				free(*cursor);
+				
 		}
-		//(*cursor)->first->end=(*cursor);	
-		printf("end of list \n");
-		//halt();
+	//	printf("end of list \n");
 	}
 clause_count--;
 
 }
+
 
 variable_pos* search_var_pos(int clause,variable_pos* head){
 //debug_pos(head);
@@ -165,17 +176,20 @@ printf("sear_var_pos: NULL head\n");exit(0);return(0);
 printf("nothing found %i \n",tmp->clause); exit(0);
 }
 
-inline int count_var_pos(variable_pos* head){
-	
+int count_var_pos(variable_pos* head){
+	variable_pos *tmp;
 	int count=0;
-	if(!head){ printf("null head count \n");return(0);}
+	if(head==NULL){ printf("null head count \n");return(0);}
+	if(head->first!=NULL){tmp = (head)->first;}else{tmp=head;}
 	
-	variable_pos *tmp = head->first;
-	
-	while(tmp!=NULL){
+	while(1){
 		count++;
-		tmp= tmp->next;
-	}
+		if(tmp->next!=NULL){
+				tmp= tmp->next;
+		}else{
+			break;
+		}
+		}
 	return (count);
 }
 

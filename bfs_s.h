@@ -16,7 +16,7 @@ void raw();
 
 variable_pos* set;
 
-variable_pos* bfs_graph( layer*,variable_pos* );
+void bfs_graph( layer*,variable_pos** );
 
 bool clause_visited[9000];
 bool counted_set[8000];
