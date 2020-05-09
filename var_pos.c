@@ -5,6 +5,8 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+
+#include "llist.h"
 #include "var_pos.h"
 #include "stest.h"
 #include "bfs_s.h"
@@ -27,7 +29,7 @@ void dispose_var_pos(variable_pos *head)
 variable_pos* make_clause(int clause){
 	variable_pos* new_clause = (variable_pos*)malloc(sizeof(variable_pos));
 	if(new_clause==NULL){
-		printf("error creating a new node. \n");
+		printf("error creating a make clause \n");
 		exit(0);
 	}
 		new_clause->clause=clause;
@@ -39,11 +41,9 @@ variable_pos* make_clause(int clause){
 }
 
 inline variable_pos* create_clause(int clause,variable_pos* previous){
-	
 	variable_pos* new_clause=make_clause(clause);
 	variable_pos* tmp;
 	
-//	if(previous)previous=previous->first;
 	
 	if(previous!=NULL ){
 
@@ -123,7 +123,7 @@ if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 			free((*cursor)->next->previous);
 			(*cursor)->next->previous=(*cursor);
 			
-							free(*cursor);
+						//	free(*cursor);
 
 		}
 
@@ -193,6 +193,25 @@ int count_var_pos(variable_pos* head){
 	return (count);
 }
 
+void Assert_Variable(int variable){
+ones[0]++;
+f_variable_connections[0][0]++;
+f_clause_size[f_variable_connections[0][0]]++;
+	
+
+	f_variable_connections[f_variable_connections[0][0]][1]=variable;
+	ones[ones[0]]=f_variable_connections[0][0];
+	f_clause_count++;
+	if(f_variable_position[abs(variable)]->clause==0){
+		f_variable_position[abs(variable)]->clause=f_variable_connections[0][0];
+		f_variable_position[abs(variable)]->first->end=f_variable_position[abs(variable)];
+	}	else{	
+		append_variable(f_variable_connections[0][0],f_variable_position[abs(variable)]);
+		}
+	
+	
+
+}
 
 void debug_pos(variable_pos *head){
 
@@ -202,10 +221,9 @@ exit(0);
 }
 //head=head->first;
 char input;
-
-printf("\n clause %i, old %i  \n ", head->clause,new_old_clause[head->clause]);
 while (1){
 
+printf("\n clause %i, old %i size[i] %i \n ", head->clause,new_old_clause[head->clause],clause_size[head->clause]);
 scanf("%c", &input);
 if(getchar()!=0){
 //printf("boop");

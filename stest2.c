@@ -1712,10 +1712,10 @@ clause_node=NULL;
 
 	//recursion begins
 	recursive_check(0,1,clause_count,sub_total,clause_node);
-		
+		exit(0);
 	if(!clause_node->next_layer){
 		mpz_set(pnt->data,sub_total);
-		gmp_printf("total %Zd  possible %Zd var count %i   \n",sub_total,all_possible,variable_count);
+		gmp_printf("end total %Zd  possible %Zd var count %i   \n",sub_total,all_possible,variable_count);
 
 	printf("there'se no clauses\n");
 		return;
@@ -1777,11 +1777,11 @@ read_cnf(argv[1]);
 	printf("%i %i\n", clause_count,variable_count); 
 
 
-init_graph(ones);
-//raw();
+//init_graph(ones);
+raw();
 printf("raw complete \n ");
 
-//solve();
+solve();
 //debug(clause_node);
 printf(" complete \n ");
 //	halt();

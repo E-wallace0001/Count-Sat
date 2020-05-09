@@ -3,12 +3,16 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
-#include "var_pos.h"
-#include "bfs_s.h"
 #include "stest.h"
-#include "clause_func.h"
 #include "infini_tree.h"
+#include "var_pos.h"
+#include "llist.h"
+#include "bfs_s.h"
+#include "clause_func.h"
+#include "cnf_read.h"
 #include <gmp.h>
+
+#include <assert.h>
 // node structure
 
 /*
@@ -150,29 +154,51 @@ int count_node(node* head){
 	}
 	return (count);
 }
+node* append_clause(int clause, node* head, node* previous_layer,mpz_t data, mpz_t removed_data,int size){
 
-void dispose(node* head){
-if(head==NULL){printf("null head \n");exit(0);}
-	node *cursor, *tmp;
-while(1){
+
+//if(head==NULL){printf("no node\n");exit(0);}
+
+	node* new_node=create(clause, data,NULL, previous_layer,head,NULL,removed_data,size);
 	
-	if(head->next!=NULL){
-		cursor=head;
-		head=head->next;
-		free(cursor);
-			if(head->next_layer!=NULL){head=head->next_layer;}
-		continue;
+	if(head!=NULL){
+		head->first_clause->end=new_node;
+		head->next=new_node;
+		new_node->first_clause=head->first_clause;
+		new_node->previous_layer=previous_layer;
+		
 	}
-	if(head->previous_layer!=NULL){
-		cursor=head->next;
-		head=head->previous_layer;
-		free(cursor);
-		continue;
+	else{
+		new_node->first_clause=new_node;
 	}
-break;
+
+	head = new_node;
+	return head;
 
 }
 
+void dispose(node* head){
+if((head)==NULL){printf("null head \n");exit(0);}
+node* tmp=NULL;
+	while(1){
+		tmp=head;
+		if(head->next_layer!=NULL){
+			dispose(head->next_layer);
+		}
+
+
+		if(head->next!=NULL){
+		//if(head->removed!=NULL)mpz_clear(head->removed);
+		//if(head->data!=NULL)mpz_clear(head->data);
+		(head)=(head)->next;
+		head->previous=NULL;
+		free(head->previous);
+		}
+		else{
+		break;
+		}
+	}
+//(*head)=(*head)->first;
 
 
 }

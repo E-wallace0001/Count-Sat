@@ -15,6 +15,7 @@ typedef struct variable_pos{
 
 }variable_pos;
 
+
 // create_pos a new variable_pos
 
 variable_pos* make_clause(int);
@@ -34,5 +35,6 @@ void debug_pos(variable_pos*);
 
 struct variable_pos* search_var_pos(int ,variable_pos*);
 
+void Assert_Variable(int variable);
 
 #endif

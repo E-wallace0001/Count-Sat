@@ -54,6 +54,7 @@ variable_pos* variable_position[6001];
 variable_pos* f_variable_position[6001];
 
 
+
 void init_index(variable_pos* table[]){
 	for(int i=1;i<=6000;i++){
 		table[i]=create_clause(0,table[i]);
@@ -476,7 +477,7 @@ static inline int compare(int a, int b){
 printf(" a %i b %i \n",a,b);
 	for(int x= clause_size[a];x!=0;x--){
 		if(set_var[abs(variable_connections[a][x])]==0){
-			list=link_append(list,variable_connections[a][x]);
+			list=link_append(variable_connections[a][x],list);
 		}
 	}
 	list=list->first;
@@ -485,7 +486,7 @@ printf(" a %i b %i \n",a,b);
 		for(int y= clause_size[b];y!=0;y--){
 //printf("here %i %i \n",list->data,f_variable_connections[b][y]); 
 			if(abs(list->data)==abs(f_variable_connections[b][y]) && set_var[abs(variable_connections[b][y])]!=0 ){
-				list=link_pop(list);
+				pop_link(&list);
 if(list==NULL)break;
 			}
 		}
@@ -513,7 +514,7 @@ static inline int compare_2(int a, int b){
 printf(" a %i b %i \n",a,b);
 	for(int x= clause_size[a];x!=0;x--){
 		if(set_var[abs(variable_connections[a][x])]==0){
-			list=link_append(list,variable_connections[a][x]);
+			list=link_append(variable_connections[a][x],list);
 		}
 	}
 	list=list->first;
@@ -522,7 +523,7 @@ printf(" a %i b %i \n",a,b);
 		for(int y= clause_size[b];y!=0;y--){
 //printf("here %i %i \n",list->data,f_variable_connections[b][y]); 
 			if(abs(list->data)==abs(f_variable_connections[b][y]) && set_var[abs(variable_connections[b][y])]!=0 ){
-				list=link_pop(list);
+				pop_link(&list);
 if(list==NULL)break;
 			}
 		}
@@ -717,6 +718,7 @@ int p=0;
 
 
 //if(saved_clause!=NULL){printf("\nsaved %i \n", saved_clause->clause);}
+	
 
 	if(saved_clause!=NULL){
 		result.start=saved_clause->clause;
@@ -724,6 +726,8 @@ int p=0;
 		result.end=0;
 				
 		result.command=1;
+
+	//	if(saved_clause->clause==start){result.command=2;result.command=1;return(result);}
 
 
 		//if the previous branch is connected
@@ -734,9 +738,10 @@ int p=0;
 
 
 		if(stored_clause->clause<=start){
+
 			result.start=start;result.command=2; 
-		int clause_comp=compare_clause(result.start, head->clause);
-result.end=2;
+			int clause_comp=compare_clause(result.start, head->clause);
+			result.end=2;
 			//result.end=0;
 			if(var_tab_check(&result.start).connections!=0){
 				result.end=1;
@@ -766,7 +771,7 @@ result.end=2;
 	else{
 		printf("stored_clause->clause %i ",stored_clause->clause);
 	}
-	
+
 	//uncomment if starting from the last variable
 	//if(multiple_variable_saved==1){result.end=1;}
 
@@ -793,7 +798,11 @@ result.end=2;
 		}	
 		
 		
-		if(stored_clause->clause == start){result.command=2;result.end=3;return(result);}
+		if(stored_clause->clause == start){
+
+			result.command=2;result.end=3;
+			return(result);
+		}
 
 	}
 
@@ -907,13 +916,15 @@ node* start_data;
 	temp_end=clause_search(init_end, tree);
 
 	if(temp_end->next_layer==NULL){
-		printf(" no new layer\n");
+		printf(" no next_layer\n");
+return;
+exit(0);
 		//return;
-		exit(0);
+		temp_end=temp_end->previous_layer;
 	}
-	temp_end=temp_end->next_layer;
-	temp_end=clause_search(init_start, temp_end);
-
+		temp_end=temp_end->next_layer;
+		temp_end=clause_search(init_start, temp_end);
+	
 
 	if(temp_end==NULL){
 		printf("ERROR101 \ncheck %i\n", check_var->clause);
@@ -1075,7 +1086,7 @@ node* start_data;
 	//outer_layer->data= total;
 	mpz_set(outer_layer->data,total);
 
-
+//if(mpz_cmp(sub_total,outer_layer->data)==0){return;}
 
 	//there isn't another clause to check
 	if(layer_temp->next==NULL || init_end-layer_temp->clause==1){
@@ -1172,7 +1183,8 @@ while(outer_loop->clause<init_end){
 			}
 			else
 			{ 
-				mpz_set(total2,sub_total);;
+							mpz_divexact_ui(total2,outer_layer->previous->data,pow(2,clause_size[outer_loop->clause]-var_connections.connections));
+				mpz_sub(total2, sub_total, total2);
 			}
 				//total2=sub_total-total2;
 				
@@ -1363,6 +1375,8 @@ void post_branch_correct(int not_start,int init_start,int init_end, int con,node
 		var_tab_add(&init_end);
 	}
 
+
+
 	outer_layer= append_layer(temp_layer->clause,head,head,nul,0 );
 
 	//outer_layer->removed=removed;
@@ -1382,13 +1396,11 @@ void post_branch_correct(int not_start,int init_start,int init_end, int con,node
 			}
 		}
 	}
-
+	
 	if(layer_temp->next==NULL ||init_end-layer_temp->clause==1 ){
 //printf(" this is the exit(0);\n");
 		return;
 	}
-//if(var_connections.connections==clause_size[init_start]){return;}
-//if(mpz_cmp(sub_total,outer_layer->data)==0)return;
 
 outer_loop=layer_temp->next;
 inner_loop=layer_temp->next;
@@ -1492,9 +1504,8 @@ if(primary_variable_connections.connections==-1){ printf("outer loop negate \n")
 
 					mpz_sub(total2,sub_total,total2);
 				}else{
-					printf("error stop \n");
-					exit(0);		
-					mpz_set(total2, sub_total);
+									mpz_divexact_ui(total2,outer_layer->previous->data,pow(2,clause_size[outer_loop->clause]-var_connections.connections));
+				mpz_sub(total2,sub_total,total2);
 				}
 				var_tab_del(&outer_loop->clause);
 
@@ -1765,7 +1776,7 @@ void solve(){
 	//the total number of all possibilities
 //	all = pow(2,variable_count);
 
-	//clause_node=NULL;
+	clause_node=NULL;
 	// all possible
 	mpz_t all_possible;
 	mpz_init (all_possible);
@@ -1792,7 +1803,7 @@ void solve(){
 	mpz_mul_ui(sub_total,sub_total,pow(2,variable_connections[start][0]));
 	//exit(0)
 	mpz_sub(sub_total,sub_total,clause_node->next_layer->end->data);
-//mpz_set(pnt->data,sub_total);
+mpz_set(pnt->data,sub_total);
 
 //	pnt= (void*)sub_total;
 //mpz_set(pnt->data, sub_total);
@@ -1841,13 +1852,12 @@ read_cnf(argv[1]);
 //start of the algorithmd
 
 //**********************
-	printf("%i %i\n", clause_count,variable_count); 
-
+	printf("%i %i\n", f_clause_count,f_variable_count); 
 
 init_graph(ones);
 //raw();
 //solve();
-dispose(clause_node);
+//dispose(&clause_node);
 //solve();
 //exit(0);
 //debug(clause_node);

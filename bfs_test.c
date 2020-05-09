@@ -7,19 +7,26 @@
 #include <string.h>
 
 #include "var_pos.h"
-#include "bfs_s.h"
+
 #include "stest.h"
 #include "clause_func.h"
 #include "stest.h"
 #include <gmp.h>
-
+#include "llist.h"
+#include "bfs_s.h"
 #include "infini_tree.h"
+
+#include "index.h"
+
+
+
 // find all the set variables
 //	ones[];
 /*
 if(ones[0]==0) //printf(" there are no set variables\n"); exit(0);
 */
 
+int cnt=0;
 int t_count=0;
 variable_pos* set;
 variable_pos* tmp;
@@ -29,29 +36,13 @@ bool clause_visited[9000]={0};
 int  new_old_clause[8000]={0};
 bool counted_set[8000]={0};
 
-void raw(){
+bool CountVariable[9000]={0};
 
-	for(int clause=1;clause<=f_clause_count;clause++){
+bool KnownSet[9000]={0};
+bool IsVariableSet[9000]={0};
+bool VariableSet[9000]={0};
 
-	set=copy_clause(clause, set);
-	}
-
-}
-
-bool CheckClauseIsNeg(int clause ){
-int variable;
-	for(int var=f_clause_size[clause];var!=0;var--){
-		variable=f_variable_connections[clause][var];
-		for(int i=1;i<=ones[0];i++){
-			if( abs(variable)==abs(f_variable_connections[ones[i]][1]) && (variable)!=f_variable_connections[ones[i]][1] ){
-				return(1);
-			}
-		}
-	}
-return(0);
-
-}
-	
+variable_pos* variable_list=NULL;
 
 void Export(variable_pos* iter){
 
@@ -75,6 +66,34 @@ while(1){
 }
 fclose (fp2);
 }
+
+
+void raw(){
+
+	for(int clause=1;clause<=f_clause_count;clause++){
+
+	set=copy_clause(clause, set);
+	}
+//Export(set);
+
+}
+
+bool CheckClauseIsNeg(int clause ){
+int variable;
+	for(int var=f_clause_size[clause];var!=0;var--){
+		variable=f_variable_connections[clause][var];
+		for(int i=1;i<=ones[0];i++){
+			if( abs(variable)==abs(f_variable_connections[ones[i]][1]) && (variable)!=f_variable_connections[ones[i]][1] ){
+				return(1);
+			}
+		}
+	}
+return(0);
+
+}
+	
+
+
 
 
 void SetOnes(){
@@ -119,40 +138,148 @@ int k=0;
 
 }
 
+
+void deduce(link_node* list, variable_pos** set){
+mpz_t saved;
+mpz_init(saved);
+variable_pos* var_list;
+variable_pos* tmp;
+var_list=variable_list;
+
+printf("variable_count %i \n", variable_count);
+
+SetIndex_LH(list,set);
+//Export(*set);
+
+(*set)=(*set)->first;
+printf("variable_count %i \n", variable_count);
+
+if(variable_list==NULL){printf("null variable_list \n");exit(0);}
+	(*set)=(*set)->first;
+	null_add(set);
+
+printf(" this %i %i \n", ones[0],clause_count);
+//debug_list(list);exit(0);}
+	solve();
+printf(" ones %i \n", ones[0]);
+//if(clause_count==40)exit(0);
+	gmp_printf(" %Zd 1 end \n", pnt->data);
+	mpz_set(saved, pnt->data);
+	null_remove(set);
+	//dispose(pnt->next_layer);
+	dispose(clause_node);
+halt();
+
+//exit(0);
+
+
+var_list=var_list->first->end;
+	while(var_list!=NULL){
+	//
+
+		if(IsVariableSet[var_list->clause]==0 ){
+			create_new_clause();
+			AddToClause(var_list->clause,*set);
+
+			null_add(set);
+
+			solve();
+printf(" ones %i \n", ones[0]);
+			RemoveFromClause(clause_count, &(*set));
+			null_remove(set);
+				if(mpz_cmp(pnt->data,saved)==0){
+					VariableSet[var_list->clause]=1;
+IsVariableSet[var_list->clause]=1;
+					Assert_Variable(var_list->clause);
+					CountVariable[var_list->clause]=0;
+					IsVariableSet[var_list->clause]=1;
+
+					cnt++;
+				}
+				if( mpz_cmp_ui(pnt->data,0)==0){
+VariableSet[var_list->clause]=1;
+					IsVariableSet[var_list->clause]=1;
+					VariableSet[var_list->clause]=0;
+					Assert_Variable(-(var_list->clause));
+
+					CountVariable[var_list->clause]=0;
+					cnt++;
+				}
+			//	gmp_printf(" %Zd 2 end \n", pnt->data);
+			//halt();
+dispose(clause_node);
+		//dispose(pnt->next_layer);
+			
+		}
+		
+		var_list=var_list->previous;
+//		list->next=NULL;
+//		free(list->next);
+	}
+
+
+
+while((*set)!=NULL){
+//tmp=(*set)->previous;
+RemoveFromClause(clause_count, set);
+//(*set)=(*set)->previous;
+}
+
+
+mpz_clear(saved);
+}
+
 void init_graph(int ones[]){
 
+	link_node* list=NULL;
 
 	variable_pos* temp_clause;	
 	int count=0;
 
 	layer* layer=set_layer(-1,2);
-printf("ones %i \n ",ones[0]);
+
 
 		int k=0;
+//variable set is state:
+//0 =-1
+//1 =1
 
-//	set=make_clause(0);
-
+for(int i=1; i<=ones[0];i++){
+	KnownSet[abs(f_variable_connections[ones[i]][1])]=1;
+//CountVariable[abs(f_variable_connections[ones[i]][1])]=1;
+	IsVariableSet[abs(f_variable_connections[ones[i]][1])]=1;
+	if(f_variable_connections[ones[i]][1]>0){
+		VariableSet[abs(f_variable_connections[ones[i]][1])]=1;
+	}else{
+		VariableSet[abs(f_variable_connections[ones[i]][1])]=0;
+	}
+}
+printf("%i \n",ones[0]);
 	for(int i=1;i<=(ones[0]);i++){
+
 //init_pos(variable_position);
 
-		printf("start %i %i %i \n", layer->num,variable_count,clause_count); 
 		//clause_count++;
 
 		//copy the original
-		set=copy_clause(ones[i], set);
-
-//		printf(" cl_Sz %i %i %i\n", ones[i],ones[0],i);
+//		set=copy_clause(ones[i], set);
+		list=link_append(ones[i], list);
 		clause_visited[ones[i]]=1;
-		//mark which orriginal clauses have been visited
-//		inline_visited[ones[i]]=1;
-//null_add(set);
-
-
 
 //		printf(" i %i\n", i);
 
 		for(int variable=f_clause_size[ones[i]];variable!=0;variable--){
 
+			if(CountVariable[abs(f_variable_connections[ones[i]][variable])]==0){
+				variable_list=create_clause(abs(f_variable_connections[ones[i]][variable]),variable_list);
+
+		CountVariable[abs(f_variable_connections[ones[i]][variable])]=1;
+
+			}else{
+				continue;
+			}
+
+			printf(" f_Var %i \n", f_variable_connections[ones[i]][variable]);
 			// collect all clauses connected to this variable
 			temp_clause=f_variable_position[abs(f_variable_connections[ones[i]][variable])];
 //			printf("tmp cl %i clause_count %i \n",temp_clause->clause,clause_count);
@@ -164,7 +291,11 @@ printf("ones %i \n ",ones[0]);
 				//set it to vistied
 				//clause_visited[temp_clause->clause]=1;
 				if(clause_visited[temp_clause->clause]==0 ){
-					set=copy_clause(temp_clause->clause, set);
+
+					printf(" clause %i %i \n", i , temp_clause->clause);
+//					set=copy_clause(temp_clause->clause, set);
+					list=link_append(temp_clause->clause, list);
+
 					clause_visited[temp_clause->clause]=1;
 				}
 		
@@ -174,108 +305,145 @@ printf("ones %i \n ",ones[0]);
 
 		}
 
-//printf("**** ones %i\n",ones[i]);
-//Export(NULL);
+//exit(0);
 
-//		inline_visited[abs(ones[i])]=1;
-//		clause_visited[temp_clause->clause]=1;
-		//printf(" %i \n",);
+		bfs_graph(layer,list);
+list=list->first->end;
 
-		bfs_graph(layer,&set);
-
-//		printf(" i %i \n", i);
-//		printf(" split-------------------------\n");
-//printf(" count %i \n",count_var_pos(set->first));
-
-
-
-set=set->first->end;
 		//printf("this set %i \n", set->clause);
-		while(set!=NULL){
-		//	printf("this is it \n");
-if(clause_visited[new_old_clause[(set)->clause]]==0){
-	printf(" unset vist\n");
-	exit(0);
-}
-			//clause_visited[new_old_clause[(set)->clause]]=0;
-			copy_removed(set->clause,&set);
 
-			//(set)=(set)->previous;
-
+		while(1){
+					//	printf("this is it \n");
+			if(clause_visited[list->data]==0){
+				printf(" unset vist %i \n",list->data);
+				exit(0);
+			}
+			//clause_visited[list->data]=0;
+			//copy_removed(set->clause,&set);
+			pop_link(&list);
+			if(list==NULL)break;
 		}
-for(int i=1;i<9000;i++){
-clause_visited[i]=0;
-}
 
-	//	printf(" clause_count %i %i \n", clause_count,variable_count);
-	}
-printf(" t_count %i \n", t_count);
+
+
+	
+
+//printf(" variable_list->clause %i \n", variable_list->clause);
+
+while(1){
+
+CountVariable[abs(variable_list->clause)]=0;
+
+if(variable_list->previous!=NULL){
+variable_list=variable_list->previous;
+
+
+}else{
+break;
 }
-void bfs_graph( layer* layer,variable_pos** set){
-if((*set)==NULL){printf("nullset\n");exit(0);}
-	variable_pos* first=(*set)->first;
-int end_clause=first->end->clause;
+}
+	}
+printf("end count %i %i\n", cnt,ones[0]);
+FILE* fp2;
+fp2=fopen("out3.cnf","w");
+
+for(int i=1;i<=f_clause_count;i++)
+{
+	for(int k=f_clause_size[i];k!=0;k--){
+		fprintf(fp2,"%i ", f_variable_connections[i][k]);
+	}
+
+	fprintf(fp2,"0\n");
+}
+fclose (fp2);
+exit(0);
+}
+void bfs_graph( layer* layer,link_node* list){
+	if(list==NULL){printf("nullset\n");exit(0);}
+	link_node* first=list->first;
+	int end_clause=list->first->end->data;
+
+	int end_var=variable_list->first->end->clause;
+
 
 	variable_pos* iter;
 	variable_pos* temp_var;
-	variable_pos* set_saved=(*set);
+	//variable_pos* set_saved=(*set);
 	variable_pos* temp_clause;
 	variable_pos* var_clause;
 	int count=0;
 	bool skipped=0;
 
-	while(first->clause!=end_clause){
-		for(int variable=clause_size[first->clause];variable!=0;variable--)
+	while(first->data!=end_clause){
+		for(int variable=f_clause_size[first->data];variable!=0;variable--)
 		{
-			temp_clause=f_variable_position[abs(f_variable_connections[new_old_clause[first->clause]][variable])];
-			if(temp_clause==NULL){Export(*set);printf(" null temp_clause \n");exit(0);}
+
+			if(CountVariable[abs(f_variable_connections[first->data][variable])]==0){
+
+				variable_list=create_clause(abs(f_variable_connections[first->data][variable]),variable_list);
+				CountVariable[abs(f_variable_connections[first->data][variable])]=1;
+			}else{
+				continue;
+			}
+
+			temp_clause=f_variable_position[abs(f_variable_connections[first->data][variable])];
+			if(temp_clause==NULL){printf(" null temp_clause \n");exit(0);}
 
 			while(temp_clause!=NULL){
 				//printf("temp_clause->clause %i \n", temp_clause->clause);
 				if(clause_visited[temp_clause->clause]==0 ){
-					(*set)=copy_clause(temp_clause->clause,(*set));
+					//(*set)=copy_clause(temp_clause->clause,(*set));
+					list=link_append(temp_clause->clause,list);
 					clause_visited[temp_clause->clause]=1;
-				}
-				
-			temp_clause=temp_clause->next;
+
+
+					for(int variable2=f_clause_size[temp_clause->clause];variable2!=0;variable2--){
+
+						if(CountVariable[abs(f_variable_connections[temp_clause->clause][variable2])]==0){
+
+							variable_list=create_clause(abs(f_variable_connections[temp_clause->clause][variable2]),variable_list);
+							CountVariable[abs(f_variable_connections[temp_clause->clause][variable2])]=1;
+						}
+					}
+
+			
+				}	
+				temp_clause=temp_clause->next;
 			}
 
-//dispose(clause_node);
-//null_add(set);
+			printf(" this %i %i \n", ones[0],clause_count);
 
-//solve();
-//dispose(clause_node);
-//printf("solved %i\n", clause_count);
-if(clause_count==374)t_count++;
-//Export((*set)->first);
+			deduce(list, &set);
 
-//null_remove(set);
-(*set)=(*set)->first;
-null_add(set);
-solve();
+			printf(" this count %i  %i \n", list->data, end_clause);
+			if(list==NULL){ printf("error \n"); exit(0);}
 
-dispose(clause_node);
-
-null_remove(set);
-
-(*set)=(*set)->first->end;
-//printf(" set %i \n", end_clause);
-while((*set)->clause>end_clause){
-if(clause_visited[new_old_clause[(*set)->clause]]==0){
-	printf(" unset vist\n");
-	exit(0);
-}
-//	clause_visited[new_old_clause[(*set)->clause]]=0;
-	copy_removed((*set)->clause,set);
-//	(*set)=(*set)->previous;
-}
-
+			list=list->first->end;
+			while(list->data!=end_clause){
+				if(clause_visited[list->data]==0){
+					printf(" this unset vist %i\n",list->data);
+					exit(0);
+				}
+				//clause_visited[list->data]=0;
+				pop_link(&list);
+				//(*set)=(*set)->previous;
+			}
+			list=list->first->end;
 		}
 
-
+		if(first->next==NULL){break;printf(" null next %i %i \n", first->data, end_clause);exit(0);}
 		first=first->next;
 	}
+		variable_list=variable_list->first->end;
 
+		
+		while(abs(variable_list->clause)!= abs(end_var)){
+			CountVariable[abs(variable_list->clause)]=0;
+			variable_list=variable_list->previous;
+			variable_list->next=NULL;
+			free(variable_list->next);
+		}
+		variable_list=variable_list->first->end;
 
 }
 

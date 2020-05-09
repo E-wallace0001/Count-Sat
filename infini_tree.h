@@ -30,7 +30,7 @@ typedef struct node{
 static inline node* create(int clause,mpz_t data,node* next_layer, node* previous_layer, node* previous, node* next,mpz_t removed,int size){
 	node* new_node = (node*)malloc(sizeof(node));
 	if(new_node==NULL){
-		printf("error creating a new node. \n");
+		printf("error creating a new node in create. \n");
 		exit(0);
 	}
 	mpz_init(new_node->data);
@@ -68,28 +68,8 @@ static inline node* append_layer(int clause, node* head,node* previous_layer, mp
 	return head;
 }
 
-static inline node* append_clause(int clause, node* head, node* previous_layer,mpz_t data, mpz_t removed_data,int size){
+node* append_clause(int , node* , node* ,mpz_t , mpz_t ,int );
 
-
-//if(head==NULL){printf("no node\n");exit(0);}
-
-	node* new_node=create(clause, data,NULL, previous_layer,head,NULL,removed_data,size);
-	
-	if(head!=NULL){
-		head->first_clause->end=new_node;
-		head->next=new_node;
-		new_node->first_clause=head->first_clause;
-		new_node->previous_layer=previous_layer;
-		
-	}
-	else{
-		new_node->first_clause=new_node;
-	}
-
-	head = new_node;
-	return head;
-
-}
 
 static inline node* prepend_clause(int , node*);
 

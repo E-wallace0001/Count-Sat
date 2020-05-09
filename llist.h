@@ -13,43 +13,24 @@ typedef struct link_node{
 
 // create a new node
 
-static inline link_node* link_create(int data, link_node* previous, link_node* next){
-	link_node* new_node = (link_node*)malloc(sizeof(link_node));
-	if(new_node==NULL){
-		printf("error creating a new node. \n");
-		
-	}
-
-	//new_node->first=new_node;
-	new_node->data = data;
-	new_node->next = next;
-	new_node->previous = previous;
-	return new_node;
-}
-
-// add a new node to the list
-static inline link_node* link_prepend(link_node* head,int data){
-	
-	link_node* new_node=link_create(data,head,NULL);
-	//if(new_node->first==NULL){new_node->first = new_node;}else{new_node->first=head;}
-	head = new_node;
-
-	return new_node;
-}
-
+link_node* link_create(int , link_node* , link_node* );
 
 //adding a node to the next level
 
-static inline link_node* link_append(link_node* head, int data){
+static inline link_node* link_append(int data,link_node* head){
 	link_node* new_node=link_create(data, head,NULL);
 
 	if(head!=NULL){
-		head->first->end=new_node;
+		new_node->first=head->first;;
+		new_node->first->end=new_node;
 		head->next=new_node;
-		new_node->first=head->first;
+		new_node->previous=head;
 	}
 	else{
+		new_node->next=NULL;
+		new_node->previous=NULL;
 		new_node->first=new_node;
+		new_node->end=new_node;
 	}
 
 return(new_node) ;
@@ -58,31 +39,7 @@ return(new_node) ;
 //iterate through the list in the main loop
 
 // relase from list
-static inline link_node* link_pop(link_node* cursor){
-
-link_node* temp;
-		
-if(cursor->previous!=NULL){
-	if(cursor->next!=NULL){
-		printf("%i\n",cursor->next->data);
-		cursor->next->previous=cursor->previous;
-		cursor->previous=cursor->next;
-		temp=cursor->previous;
-	}else{
-		temp=cursor->previous;
-		temp->next=NULL;
-	}
-}else{
-	if(cursor->next!=NULL){
-		temp=cursor->next;
-		temp->previous=NULL;
-	}
-
-}
-
-free(cursor);
-return(NULL);
-}
+void pop_link(link_node** );
 
 static inline int link_count(link_node* head){
 
@@ -98,20 +55,8 @@ static inline int link_count(link_node* head){
 	return (count);
 }
 
-void link_dispose(link_node *head)
-{
-	link_node *cursor, *tmp;
+void link_dispose(link_node*);
 
-	if(head != NULL){
-		cursor= head->next;
-		
-		head->next=NULL;
-		while(cursor!=NULL){
-			tmp=cursor->next;
-			free(cursor);
-			cursor=tmp;
-		}
-	}
-}
+void debug_list(link_node*);
 
 #endif
