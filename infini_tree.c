@@ -117,6 +117,28 @@ static inline node* prepend_clause(int clause, node* head){
 
 
 */
+
+
+node* create(int clause,mpz_t data,node* next_layer, node* previous_layer, node* previous, node* next,mpz_t removed,int size){
+	node* new_node = (node*)malloc(sizeof(node));
+	if(new_node==NULL){
+		printf("error creating a new node in create. \n");
+		exit(0);
+	}
+	
+	
+	new_node->first_clause=new_node;
+	new_node->end=new_node;
+	new_node->next_layer=NULL;
+	new_node->previous_layer=NULL;
+	new_node->next=NULL;
+	new_node->clause=clause;
+	new_node->previous=previous;
+	mpz_init(new_node->data);
+	mpz_init(new_node->removed);
+	return new_node;
+}
+
 // relase from list
 static inline void pop(node* cursor){
 	if(cursor->next!=NULL){
@@ -162,11 +184,11 @@ node* append_clause(int clause, node* head, node* previous_layer,mpz_t data, mpz
 	node* new_node=create(clause, data,NULL, previous_layer,head,NULL,removed_data,size);
 	
 	if(head!=NULL){
-		head->first_clause->end=new_node;
-		head->next=new_node;
+
 		new_node->first_clause=head->first_clause;
 		new_node->previous_layer=previous_layer;
-		
+		head->first_clause->end=new_node;
+		head->next=new_node;
 	}
 	else{
 		new_node->first_clause=new_node;
@@ -177,25 +199,42 @@ node* append_clause(int clause, node* head, node* previous_layer,mpz_t data, mpz
 
 }
 
-void dispose(node* head){
-if((head)==NULL){printf("null head \n");exit(0);}
-node* tmp=NULL;
+node* append_layer(int clause, node* head,node* previous_layer, mpz_t data,int size){
+	node* new_node=create(clause, data, NULL, head,NULL,NULL,data,size);
+
+	new_node->clause=clause;
+	
+	new_node->previous_layer=previous_layer;
+
+	previous_layer->next_layer= new_node;
+	
+
+	mpz_set(new_node->data,data);
+
+
+	return new_node;
+}
+
+void dispose(node** head){
+if((*head)==NULL){printf("null head \n");exit(0);}
 	while(1){
-		tmp=head;
-		if(head->next_layer!=NULL){
-			dispose(head->next_layer);
+		if( (*head)->next_layer!=NULL){
+			dispose(&((*head)->next_layer));
+			mpz_clear((*head)->next_layer->removed);
+			mpz_clear((*head)->next_layer->data);
+			free((*head)->next_layer);
 		}
 
 
-		if(head->next!=NULL){
-		//if(head->removed!=NULL)mpz_clear(head->removed);
-		//if(head->data!=NULL)mpz_clear(head->data);
-		(head)=(head)->next;
-		head->previous=NULL;
-		free(head->previous);
-		}
-		else{
-		break;
+		if((*head)->next!=NULL){
+			mpz_clear((*head)->removed);
+			mpz_clear((*head)->data);
+			(*head)=(*head)->next;
+			free((*head)->previous);
+		}else{
+			head=NULL;
+			//free(head);
+			break;
 		}
 	}
 //(*head)=(*head)->first;

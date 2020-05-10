@@ -147,7 +147,6 @@ variable_pos* tmp;
 var_list=variable_list;
 
 printf("variable_count %i \n", variable_count);
-
 SetIndex_LH(list,set);
 //Export(*set);
 
@@ -157,20 +156,25 @@ printf("variable_count %i \n", variable_count);
 if(variable_list==NULL){printf("null variable_list \n");exit(0);}
 	(*set)=(*set)->first;
 	null_add(set);
-
+//if(ones[0]==501 && clause_count==231){Export(*set);exit(0);}
 printf(" this %i %i \n", ones[0],clause_count);
 //debug_list(list);exit(0);}
 	solve();
+	
+
+
 printf(" ones %i \n", ones[0]);
 //if(clause_count==40)exit(0);
 	gmp_printf(" %Zd 1 end \n", pnt->data);
 	mpz_set(saved, pnt->data);
 	null_remove(set);
-	//dispose(pnt->next_layer);
-	dispose(clause_node);
-halt();
+	
+	dispose(&clause_node);
+	
+	//debug(clause_node);
+//halt();
 
-//exit(0);
+
 
 
 var_list=var_list->first->end;
@@ -207,7 +211,7 @@ VariableSet[var_list->clause]=1;
 				}
 			//	gmp_printf(" %Zd 2 end \n", pnt->data);
 			//halt();
-dispose(clause_node);
+		dispose(&clause_node);
 		//dispose(pnt->next_layer);
 			
 		}
@@ -308,6 +312,7 @@ printf("%i \n",ones[0]);
 //exit(0);
 
 		bfs_graph(layer,list);
+		
 list=list->first->end;
 
 		//printf("this set %i \n", set->clause);
@@ -316,11 +321,13 @@ list=list->first->end;
 					//	printf("this is it \n");
 			if(clause_visited[list->data]==0){
 				printf(" unset vist %i \n",list->data);
-				exit(0);
+				
 			}
 			//clause_visited[list->data]=0;
 			//copy_removed(set->clause,&set);
+			
 			pop_link(&list);
+			
 			if(list==NULL)break;
 		}
 

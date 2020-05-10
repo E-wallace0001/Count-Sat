@@ -17,24 +17,7 @@ link_node* link_create(int , link_node* , link_node* );
 
 //adding a node to the next level
 
-static inline link_node* link_append(int data,link_node* head){
-	link_node* new_node=link_create(data, head,NULL);
-
-	if(head!=NULL){
-		new_node->first=head->first;;
-		new_node->first->end=new_node;
-		head->next=new_node;
-		new_node->previous=head;
-	}
-	else{
-		new_node->next=NULL;
-		new_node->previous=NULL;
-		new_node->first=new_node;
-		new_node->end=new_node;
-	}
-
-return(new_node) ;
-}
+link_node* link_append(int ,link_node* );
 
 //iterate through the list in the main loop
 

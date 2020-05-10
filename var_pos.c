@@ -71,11 +71,13 @@ inline variable_pos* create_clause(int clause,variable_pos* previous){
 inline variable_pos* append_variable(int clause, variable_pos* head){
 head=head->first->end;
 //	variable_pos* new_variable_pos=create_pos(clause, head);
+	
 	variable_pos* new_variable_pos;
+	
 //	head=head->first->end;
 	if(head->clause==0){
 		head->clause=clause;
-return head;
+		return head;
 		
 	}else{
 
@@ -84,14 +86,16 @@ return head;
 		printf("error creating a new variable_pos. \n");
 		exit(0);
 	}
-		head->next=new_variable_pos;
+
+		new_variable_pos->clause=clause;
+		
 		new_variable_pos->first=head->first;
 		new_variable_pos->previous=head;
-		head->first->end=new_variable_pos;
-		new_variable_pos->clause=clause;
 
 		new_variable_pos->next=NULL;
-		new_variable_pos->previous=head;
+
+		head->next=new_variable_pos;
+		head->first->end=new_variable_pos;
 	}
 
 	return new_variable_pos;
@@ -123,7 +127,7 @@ if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 			free((*cursor)->next->previous);
 			(*cursor)->next->previous=(*cursor);
 			
-						//	free(*cursor);
+			free(*cursor);
 
 		}
 
