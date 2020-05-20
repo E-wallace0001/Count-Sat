@@ -3,24 +3,30 @@
 
 //#include "infini_tree.h"
 
-int ones[4000];
+#define vsize 900000
+#define csize 900000
+
+
+int ones[csize];
+
+int OnesPlace[csize];
 
 int counted_for;
-int clause_size[127000];
-int f_clause_size[127000];
-bool set_var[40000];
+int clause_size[csize];
+int f_clause_size[csize];
+bool set_var[csize];
 
-int var_tab[10000];
+int var_tab[vsize];
 
-long set_variable[127000];
+long set_variable[vsize];
 
 //void init_pos(struct variable_pos* table[]);
 
-struct variable_pos* variable_position[6001];
-struct variable_pos* f_variable_position[6001];
+struct variable_pos* variable_position[csize];
+struct variable_pos* f_variable_position[csize];
 
-int variable_connections[127000][50];
-int f_variable_connections[127000][50];
+int variable_connections[vsize][50];
+int f_variable_connections[vsize][50];
 
 int clause_count;
 int f_clause_count;
@@ -32,7 +38,7 @@ void halt();
 
 unsigned int nr_variables;
 unsigned int nr_clauses;
-int variable[127000][50];
+int variable[vsize][50];
 
 //FILE fp;
 int argc;

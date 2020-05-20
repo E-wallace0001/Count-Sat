@@ -1,6 +1,8 @@
 #ifndef BFS_S_H
 #define BFS_S_H
 
+#include "stest.h"
+
 typedef struct layer{
 	int num, lim;
 } layer;
@@ -18,9 +20,11 @@ variable_pos* set;
 
 void bfs_graph( layer*,link_node* );
 
-bool clause_visited[9000];
-bool counted_set[8000];
+bool clause_visited[csize];
+bool counted_set[vsize];
 void init_graph();
-int new_old_clause[8000];
+int new_old_clause[vsize];
+
+bool IsVariableSet[vsize];
 
 #endif

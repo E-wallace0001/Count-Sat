@@ -69,12 +69,11 @@ inline variable_pos* create_clause(int clause,variable_pos* previous){
 }
 
 inline variable_pos* append_variable(int clause, variable_pos* head){
-head=head->first->end;
 //	variable_pos* new_variable_pos=create_pos(clause, head);
 	
 	variable_pos* new_variable_pos;
 	
-//	head=head->first->end;
+	head=head->first->end;
 	if(head->clause==0){
 		head->clause=clause;
 		return head;
@@ -106,7 +105,7 @@ head=head->first->end;
 // release from list
 void pop_clause(variable_pos* *cursor){
 if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
-	variable_pos* tmp;
+	variable_pos* tmp=(*cursor);
 	variable_pos* st;
 
 	if((*cursor)->previous!=NULL){
@@ -116,18 +115,17 @@ if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 			(*cursor)=(*cursor)->previous;
 
 			(*cursor)->first->end=(*cursor);
-		//
+		
+			tmp=(*cursor)->next;
 			(*cursor)->next=NULL;
-			free((*cursor)->next);	
+			free(tmp);	
 			
 
 		}else{
-			(*cursor)=(*cursor)->previous;
-			(*cursor)->next=(*cursor)->next->next;
-			free((*cursor)->next->previous);
-			(*cursor)->next->previous=(*cursor);
+			(*cursor)->previous->next=tmp->next;
+			(*cursor)->next->previous=tmp->previous;
+			free((*cursor));
 			
-			free(*cursor);
 
 		}
 
@@ -139,7 +137,7 @@ if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 		if((*cursor)->next!=NULL){
 			(*cursor)=(*cursor)->next;
 			(*cursor)->previous=NULL;
-			free((*cursor)->previous);
+			free(tmp);
 			
 			st=(*cursor)->next;
 			while(st!=NULL){
@@ -149,7 +147,6 @@ if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 		}else{
 				(*cursor)=NULL;
 				free(*cursor);
-				
 		}
 	//	printf("end of list \n");
 	}
@@ -198,22 +195,26 @@ int count_var_pos(variable_pos* head){
 }
 
 void Assert_Variable(int variable){
-ones[0]++;
+
 f_variable_connections[0][0]++;
-f_clause_size[f_variable_connections[0][0]]++;
+f_clause_size[f_variable_connections[0][0]]=1;
 	
 
 	f_variable_connections[f_variable_connections[0][0]][1]=variable;
+	ones[0]++;
 	ones[ones[0]]=f_variable_connections[0][0];
+	OnesPlace[abs(variable)]=f_variable_connections[0][0];
+	
 	f_clause_count++;
-	if(f_variable_position[abs(variable)]->clause==0){
-		f_variable_position[abs(variable)]->clause=f_variable_connections[0][0];
-		f_variable_position[abs(variable)]->first->end=f_variable_position[abs(variable)];
-	}	else{	
+	
+	if( f_variable_position[abs(variable)]->clause == 0 ){
+		f_variable_position[abs(variable)]->clause		= f_variable_connections[0][0];
+		f_variable_position[abs(variable)]->end			= f_variable_position[abs(variable)];
+	}else{	
+
 		append_variable(f_variable_connections[0][0],f_variable_position[abs(variable)]);
-		}
-	
-	
+
+	}
 
 }
 

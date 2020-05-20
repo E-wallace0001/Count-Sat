@@ -38,8 +38,18 @@ static inline int link_count(link_node* head){
 	return (count);
 }
 
+link_node* AddLists(link_node*, link_node*);
+
 void link_dispose(link_node*);
 
 void debug_list(link_node*);
+
+void DeleteList(link_node** cursor);
+
+int ListSize(link_node*);
+
+int RemoveMember(link_node**);
+
+link_node* DeleteNode(link_node*);
 
 #endif
