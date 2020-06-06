@@ -4,7 +4,9 @@
 #include <stdbool.h>
 #include "llist.h"
 #include "stest.h"
-
+#include "var_pos.h"
+#include "map.h"
+#include "index.h"
 
 link_node* link_create(int data, link_node* previous, link_node* next){
 	link_node* new_node = (link_node*)malloc(sizeof(link_node));
@@ -43,6 +45,26 @@ link_node* link_append(int data,link_node* head){
 	}
 
 return(new_node) ;
+}
+
+
+link_node* copy_list(link_node* list){
+link_node* new_list=NULL;
+if(list==NULL){ printf("null list copy \n"); exit(0);}
+
+list=list->first;
+
+while(1){
+	new_list=link_append(list->data, new_list);
+	if(list->next!=NULL){
+		list=list->next;
+	}else{
+		break;
+	}
+}
+
+return new_list;
+
 }
 
 // add a new node to the list
@@ -145,6 +167,68 @@ if((*cursor)->previous!=NULL){
 return(0);
 }
 
+int RemoveFromList(link_node** cursor){
+	int ret=0;
+if((*cursor)==NULL){printf(" null ptr- link_pop\n"); exit(0);}
+
+link_node* temp;
+link_node* next;
+link_node* previous;
+		
+if((*cursor)->previous!=NULL){
+	
+	if((*cursor)->next!=NULL){
+		next=(*cursor)->next;
+		previous=(*cursor)->previous;
+		temp=(*cursor);
+		(*cursor)=next;
+		next->previous=previous;
+		previous->next=next;
+		
+		//free(temp);
+	}else{
+		temp=(*cursor);
+		(*cursor)=(*cursor)->previous;
+		
+		(*cursor)->first->end=(*cursor);
+		(*cursor)->next=NULL;
+		
+		//free(temp);
+		
+		return (-1);
+	}
+	
+	
+}else{
+	if((*cursor)->next!=NULL){
+		temp=(*cursor);
+		(*cursor)=(*cursor)->next;
+		
+		(*cursor)->first=(*cursor);
+		(*cursor)=(*cursor)->first;
+		(*cursor)->previous=NULL;
+		
+		while(1){
+			(*cursor)->first=temp->next;
+			if((*cursor)->next==NULL)break;
+			(*cursor)=(*cursor)->next;
+		}
+		temp->next->end=(*cursor);
+		free(temp);
+
+	}else{
+		(*cursor)->next=NULL;
+		(*cursor)->previous=NULL;
+		//(*cursor)=NULL;
+		free(*cursor);
+		return (-1);
+	}
+
+	
+}
+return(0);
+}
+
 int ListSize(link_node* cursor){
 
 	int count=0;
@@ -166,6 +250,237 @@ int ListSize(link_node* cursor){
 	
 
 }
+
+
+int FindLargestClause( link_node* Node){
+
+	if( Node == NULL ) return 0;
+	Node=Node->first;	
+	int largest=0;
+	while(Node!=NULL){
+
+		if( f_clause_size[Node->data] >largest){
+			largest=f_clause_size[Node->data];
+		}
+		
+		
+		Node=Node->next;
+	}
+	
+	return largest;
+
+}
+
+link_node* BinSort(link_node* Node){
+
+	if( Node == NULL) exit(0);
+
+	int size= FindLargestClause(Node);
+	
+	variable_pos** SearchIndex=CreateIndex(size);
+	
+	link_node* Sorted=NULL;
+	
+	Node=Node->first;
+	
+	//halt();
+	while(Node!=NULL){
+		
+		if(f_clause_size[Node->data]>size){printf(" greater than 75 \n");exit(0);}
+			SetIndex(Node->data,f_clause_size[Node->data],SearchIndex);
+
+			Node=Node->next;
+		}
+
+		for(int i=1;i<=size;i++){
+			if(SearchIndex[i]->clause==0){
+				continue;
+			}
+
+			variable_pos* iter = SearchIndex[i];
+			
+			while(iter!=NULL){
+				Sorted = link_append( iter->clause, Sorted);
+				iter	 = iter->next;
+			}
+		}
+	FreeSearch(SearchIndex,size);
+	return Sorted->first;
+
+}
+
+link_node* GroupSingles( link_node* set ){
+
+	link_node* tried = NULL; 
+
+	 set=set->first;
+	
+	link_node* temp = NULL;
+	bool found = 0;
+	
+	while(1){
+	
+		if( f_clause_size[ set->data ] == 1 ){
+			
+			if( ExistInSet( abs(f_variable_connections[ set->data ][ 1 ]) , tried) == 1){
+				if( set->next == NULL) break;
+				set=set->next;
+				continue;
+			}
+			printf(" this single %i \n", f_variable_connections[ set->data ][ 1 ]);
+			tried = link_append( abs(f_variable_connections[ set->data ][ 1 ]), tried);
+			
+			if( set->next == NULL ) break;
+			
+			temp = set->next;
+			
+			while(temp!=NULL){
+				for( int variable = f_clause_size[ temp->data ]; variable != 0; variable--){
+				
+					if( abs( f_variable_connections[temp->data][variable] ) == abs(f_variable_connections[ set->data ][ 1 ]) ){
+						printf( "found %i \n",f_variable_connections[temp->data][variable]);
+						found=1;
+						break;
+					}
+				}
+				
+				if( found==1){
+					// Swap places
+					if( set->previous != NULL){
+						set->previous->next = set->next;
+						set->next->previous = set->previous;
+
+					}else{
+					
+						set->next->previous=NULL;
+						set->first->end= set->next;
+					}
+						set->previous = temp->previous;
+						if(temp->previous!=NULL){
+						temp->previous->next= set;
+						}
+					set->next = temp;
+					temp->previous=set;
+					found=0;
+				}
+			
+				temp=temp->next;
+			}	
+		}
+	
+		if(set->next==NULL) break;
+		set=set->next;
+	}
+
+DestroySet( tried );
+	return set->first;
+}
+
+link_node* GroupTogether( link_node* Node ){
+	Node=Node->first;
+
+	link_node* Group = BinSort( Node );
+	//link_node* Group = Node ;
+	link_node* temp		= NULL;
+	link_node* Mod			= NULL;
+	link_node* Compare	= NULL;
+	
+	link_node* found = NULL;
+
+	Group=Group->first->end;
+	int limit=0;
+	bool brk=0;
+	link_node* list=NULL;
+	while(Group!=NULL){
+		if( Group->previous==NULL){
+			break;
+		}
+		limit=Group->previous->data;
+		//printf(" group %i \n", Group->data);
+		int Variable=1;
+		for( int Variable=f_clause_size[Group->data]; Variable!=0; Variable--){
+		
+//		if( ExistInSet( abs(f_variable_connections[ Group->data ] [ Variable]),list ) ==1) {continue;}
+
+		
+			// for all previous, connect to the this point
+				Compare=Group->previous;
+				
+				while(Compare!=NULL){
+				
+					
+					for( int Variable2=f_clause_size[Compare->data]; Variable2!=0; Variable2--){
+					
+						if( abs(f_variable_connections[ Compare->data ][ Variable2 ] ) == abs( f_variable_connections[ Group->data ][ Variable ] )){
+							//halt();
+							if( Compare->previous==NULL){
+								
+								Mod = Compare;
+								
+								if( Compare->previous !=NULL){	Compare=Compare->previous; brk=1; }
+								
+								Mod = Mod->next;
+								Mod->previous=NULL;
+								temp=Mod ;
+								while(temp!=NULL){
+									temp -> first = Mod;
+									if(temp->next==NULL)break;
+									temp=temp->next;
+								}
+								Mod->end = temp;
+								
+								
+							}else{
+								Mod = Compare;
+								
+								
+								Mod->next->previous=Mod->previous;
+								Mod->previous->next=Mod->next;
+								Mod->first=NULL;
+								Mod->end=NULL;
+								Mod->next=NULL;
+								Mod->previous=NULL;
+								if( found==NULL){
+									found =Mod;
+									found->first=Mod;
+									found->end=Mod;
+								}else{
+								found->first->end->next = Mod;
+								Mod->previous= found->first->end;
+								Mod->first = found;
+								}
+								
+							}
+							break;
+						}
+					}
+					
+					
+					if( Compare->previous==NULL)break;
+					Compare=Compare->previous;
+
+				}
+				if(found!=NULL){
+				Group->previous->next= found->first;
+				found->first->previous=Group->previous;
+				Group->previous=found->end;
+				found->end->next=Group;
+				found=found->first;
+				while(found!=NULL){
+					found->first=Group->first;
+					found=found->next;
+				}
+				}
+				
+			}
+		if(Group->previous==NULL)break;
+		Group=Group->previous;
+	}
+	//DeleteSet(&list);
+	return Group;
+}
+
+
 
 void DeleteList(link_node** cursor){
 	(*cursor)=(*cursor)->first->end;
@@ -267,15 +582,14 @@ void link_dispose(link_node *head)
 {
 	link_node *cursor, *tmp;
 
-	if(head != NULL){
-		cursor= head->next;
+	if(head == NULL) return;
+		cursor= head->first;
 		
-		head->next=NULL;
 		while(cursor!=NULL){
 			tmp=cursor->next;
 			free(cursor);
 			cursor=tmp;
-		}
+		
 	}
 }
 

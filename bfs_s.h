@@ -2,7 +2,7 @@
 #define BFS_S_H
 
 #include "stest.h"
-
+#include "map.h"
 typedef struct layer{
 	int num, lim;
 } layer;
@@ -26,5 +26,9 @@ void init_graph();
 int new_old_clause[vsize];
 
 bool IsVariableSet[vsize];
+
+int Evaluate(link_node* , link_node* , int , map* , variable_pos**  , int[], bool);
+
+bool VariableSet[vsize];
 
 #endif

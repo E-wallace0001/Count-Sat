@@ -57,5 +57,10 @@ void debug();
 int f_clause_count;
 int clause_count;
 
+//static inline int compare_clause(int, int ) ;
+
+
+struct link_node* FindFVariableInRange( int ,  int , struct link_node* );
+
 
 #endif

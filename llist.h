@@ -44,12 +44,26 @@ void link_dispose(link_node*);
 
 void debug_list(link_node*);
 
-void DeleteList(link_node** cursor);
+void DeleteList(link_node** );
 
 int ListSize(link_node*);
 
 int RemoveMember(link_node**);
 
 link_node* DeleteNode(link_node*);
+
+int RemoveFromList(link_node** );
+
+link_node* copy_list(link_node* );
+
+link_node* GroupTogether( link_node* );
+
+int FindLargestClause( link_node* );
+
+link_node* BinSort ( link_node*);
+
+link_node* GroupSingles( link_node* );
+
+
 
 #endif

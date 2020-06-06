@@ -37,4 +37,9 @@ struct variable_pos* search_var_pos(int ,variable_pos*);
 
 void Assert_Variable(int variable);
 
+void RemoveVariablePosition(variable_pos*,int var);
+
+
+void RemoveFVariablePosition(variable_pos*,int var);
+
 #endif

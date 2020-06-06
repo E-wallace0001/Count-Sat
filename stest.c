@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
-#include "stest.h"
+
 #include "infini_tree.h"
 #include "var_pos.h"
 #include "chain_block.h"
@@ -15,7 +15,7 @@
 #include "clause_func.h"
 #include "cnf_read.h"
 #include <gmp.h>
-
+#include "stest.h"
 #include <assert.h>
 
 
@@ -455,6 +455,27 @@ static inline int compare_clause(int a, int b){
 return(count);
 }
 
+
+link_node* FindFVariableInRange( int variable,  int limit, link_node* Node){
+	if(Node == NULL) return NULL;
+	Node=Node->first;
+	while(Node!=NULL){
+	
+		for( int var= f_clause_size[Node->data]; var !=0; var--){
+
+			if( abs( f_variable_connections[ Node->data ][ var ] ) == abs( variable ) ){
+			printf( " variable %i \n", variable);
+			 return Node;
+			}
+			
+		}	
+					
+		
+		Node= Node->next;
+	}
+	return NULL;
+
+}
 
 
 
@@ -1485,7 +1506,8 @@ if(!previous_layer)exit(0);
 	bool second=0;
 	// for each clause, check for a previous connection
 	for (int i=1; i<=(clause_count); i++){
-
+	//printf(" i %i \n", i);
+//if(clause_size[i]==0)continue;
 		// check how many connections there are that exists from this clause
 		var_connections=var_tab_check(&i);
 
@@ -1656,7 +1678,7 @@ void solve(){
 	mpz_sub(sub_total,sub_total,clause_node->next_layer->end->data);
 	mpz_set(pnt->data,sub_total);
 
-//	gmp_printf("2 total %Zd  possible %Zd var count %i   \n",sub_total,all_possible,variable_count);
+gmp_printf("2 total %Zd  possible %Zd var count %i   \n",sub_total,all_possible,variable_count);
 	
 	mpz_set(clause_node->data,sub_total);
 

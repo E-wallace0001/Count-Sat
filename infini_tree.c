@@ -165,6 +165,7 @@ static inline int count(node* head){
 	}
 	return (count);
 }
+
 int count_node(node* head){
 	
 	int count=0;

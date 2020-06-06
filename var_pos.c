@@ -10,7 +10,7 @@
 #include "var_pos.h"
 #include "stest.h"
 #include "bfs_s.h"
-
+#include "index.h"
 void dispose_var_pos(variable_pos *head)
 {
 	variable_pos *cursor, *tmp;
@@ -126,7 +126,6 @@ if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 			(*cursor)->next->previous=tmp->previous;
 			free((*cursor));
 			
-
 		}
 
 	}
@@ -152,6 +151,106 @@ if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 	}
 clause_count--;
 
+}
+
+void RemoveFVariablePosition(variable_pos* cursor, int var){
+
+if((cursor)==NULL){printf(" null pass ptr\n");exit(0);}
+	variable_pos* tmp=(cursor);
+	variable_pos* st;
+
+	if((cursor)->previous!=NULL){
+		
+		if((cursor)->next==NULL){
+			
+			(cursor)->previous->next=NULL;
+			(cursor)->first->end=(cursor)->previous;
+			free(cursor);
+
+		}else{
+			(cursor)->previous->next=	(cursor)->next;
+			(cursor)->next->previous=	(cursor)->previous;
+			
+		}
+	}
+	else{
+		//if there's not a previous address
+		if(cursor->next!=NULL){
+			printf("prev\n");
+			f_variable_position[var]=f_variable_position[var]->next;
+			//free(variable_position[var]->previous);
+			f_variable_position[var]->previous=NULL;
+			cursor = f_variable_position[var] ;
+			while( 1 ){
+				cursor->first=f_variable_position[var];
+				if(cursor->next!=NULL){
+					cursor=cursor->next;
+				}else{
+					break;
+				}
+		
+			}
+			cursor->first->end=cursor;
+		}else{
+			cursor->clause=0;
+			variable_count--;
+		}
+	}
+}
+
+void RemoveVariablePosition(variable_pos* cursor, int var){
+
+if((cursor)==NULL){printf(" null pass ptr\n");exit(0);}
+	variable_pos* tmp=(cursor);
+	variable_pos* st;
+
+	if((cursor)->previous!=NULL){
+	//	printf("previous con %i\n",(*cursor)->clause);
+		
+		if((cursor)->next==NULL){
+			
+			
+			
+			(cursor)->previous->next=NULL;
+			(cursor)->first->end=(cursor)->previous;
+			free(cursor);
+			
+			
+			//mp=(*cursor)->next;
+			//(*cursor)->next=NULL;
+			//free(tmp);	
+			
+
+		}else{
+			(cursor)->previous->next=	(cursor)->next;
+			(cursor)->next->previous=	(cursor)->previous;
+			
+		}
+
+	}
+	else{
+		//if there's not a previous address
+		if(cursor->next!=NULL){
+			printf("prev\n");
+			variable_position[var]=variable_position[var]->next;
+			//free(variable_position[var]->previous);
+			variable_position[var]->previous=NULL;
+			cursor = variable_position[var] ;
+			while( 1 ){
+				cursor->first=variable_position[var];
+				if(cursor->next!=NULL){
+					cursor=cursor->next;
+				}else{
+					break;
+				}
+		
+			}
+			cursor->first->end=cursor;
+		}else{
+			cursor->clause=0;
+			variable_count--;
+		}
+	}
 }
 
 
@@ -196,8 +295,16 @@ int count_var_pos(variable_pos* head){
 
 void Assert_Variable(int variable){
 
-f_variable_connections[0][0]++;
-f_clause_size[f_variable_connections[0][0]]=1;
+	IsVariableSet[ abs(variable) ] = 1;
+
+	if(variable > 0 ){
+		VariableSet[abs(variable)]=1;
+	}else{
+		VariableSet[abs(variable)]=0;
+	}
+
+	f_variable_connections[0][0]++;
+	f_clause_size[f_variable_connections[0][0]]=1;
 	
 
 	f_variable_connections[f_variable_connections[0][0]][1]=variable;
@@ -215,6 +322,8 @@ f_clause_size[f_variable_connections[0][0]]=1;
 		append_variable(f_variable_connections[0][0],f_variable_position[abs(variable)]);
 
 	}
+	
+	//reduce( variable) ;
 
 }
 

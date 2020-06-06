@@ -6,15 +6,15 @@ variable_pos** CreateIndex( int);
 
 void SetIndex(int, int, variable_pos* []);
 
-variable_pos* SetIndex_LH(link_node*,variable_pos** , int[],map*);
+variable_pos* SetIndex_LH(link_node*,variable_pos** , int[],map*, map**);
 
 void FreeIndex(variable_pos**);
 void FreeSet(variable_pos**);
-void FreeSearch(variable_pos**);
+void FreeSearch(variable_pos**,int );
 
 int CountSet(variable_pos**);
 
-void CreateGroup(link_node* ,variable_pos** , int[], map**);
+void CreateGroup(link_node* ,variable_pos** , map**, map**);
 
 link_node* FindMembers( int, variable_pos**, link_node* ,int[], map*);
 
@@ -53,4 +53,20 @@ int* CreateArray(int);
 
 void DestroyArray(int []);
 
+void DestroySet(link_node*);
+
+link_node* RemoveUntil(int , link_node* );
+
+void RemoveClauseFromIndex(int, variable_pos**);
+
+void RemoveVariableFromClause(int , int , variable_pos** );
+
+link_node* RemoveDisjoint(link_node* , int*, map*, variable_pos** );
+
+link_node* RemoveKnownVariable( link_node* );
+
+void reduce( int );
+
+variable_pos* SetNewIndex(link_node* ,variable_pos** ,int [], map* , map** );
+	
 #endif

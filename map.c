@@ -52,6 +52,7 @@ int MapGetKey(int value, map* ThisMap){
 }
 
 void FreeMap(map* ThisMap){
+if(ThisMap==NULL)return;
 map* tmp =ThisMap;
 	while(tmp->next!=NULL){
 	tmp=tmp->next;
