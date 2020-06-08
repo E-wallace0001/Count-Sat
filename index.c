@@ -684,7 +684,7 @@ link_node* RemoveUntil(int End, link_node* list){
 	while(1){
 
 		if(list->previous==NULL){break;}
-if(list->data==End)break;
+if(list->previous->data==End)break;
 		list = list->previous;
 		
 		list->next=NULL;

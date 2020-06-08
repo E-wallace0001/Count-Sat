@@ -136,7 +136,7 @@ int k=0;
 int SearchAndCollect(link_node* list, link_node* SetList,link_node* Tried, int limit, int LimitReached,int GroupDictionary[], int TestVariable, map* Map, variable_pos** Group , bool TryAll){
 
 printf(" 		cluase %i \n", TestVariable);
-limit++;
+
 
 int TriedSaved=0;
 	link_node*	TempList = NULL;
@@ -149,13 +149,13 @@ int TriedSaved=0;
 	int eval =0;
 
 	list=list->first;
-	while( list!=NULL ){
 	link_node* 	NewList  = NULL;
+	while( list!=NULL ){
 	printf(" list->data %i\n", list->data);
 
 		for( int clause = f_clause_size[list->data]; clause!=0; clause--){
 			if(	ExistInSet( abs(f_variable_connections[list->data][clause]), Tried) == 1 ) continue;
-			
+			printf(" var %i \n",abs(f_variable_connections[list->data][clause]));
 			Tried = link_append( abs(f_variable_connections[list->data][clause]) , Tried);
 
 			// copy all of the places of variable
@@ -163,17 +163,14 @@ int TriedSaved=0;
 			SetList = CopySet( abs(f_variable_connections[list->data][clause]) ,f_variable_position, SetList);
 			
 		}
-				NewList = RemoveDuplicateMembers( &NewList );
-		
-		if( NewList==NULL ) { 
-			printf(" null \n");
-			if(list->next!=NULL){ 
-				list=list->next;
-				continue;
-			}
-			
+		if(list->next!=NULL){
+
+			list=list->next;
+		}else{
+			printf(" ding \n");
 			break;
 		}
+	}
 
 		SetList = RemoveDuplicateMembers( &SetList );
 		
@@ -215,22 +212,10 @@ int TriedSaved=0;
 		}
 
 
-		if(list->next!=NULL){
 
-			list=list->next;
-		}else{
-		printf(" ding \n");
-			break;
-		}
 
-		/*
-		DeleteIndex( Group ,VariableCount);
-		FreeMap(Map);
-		Bisector=Bisector->next;
-		*/
-		
 
-	}
+
 	printf("returned \n");
 	return 1;
 
@@ -279,8 +264,10 @@ int Evaluate(link_node* SetList, link_node* Tried, int TestVariable, map* Map, v
 		
 		printf("subsetsize %i %i \n",ListSize(subset),ListSize(SetList));
 		
+	//	
+		subset = BinSort( subset );
 		subset = GroupTogether( subset );
-		subset = GroupSingles( subset );
+		//		subset = GroupSingles(subset);
 		SetNewIndex( subset , &set, GroupDictionary ,Map, &Location);
 		//	SetIndex_LH( subset , &set, GroupDictionary ,Map, &Location);
 		//RemoveDisjoint(subset,GroupDictionary, Location, &set);
@@ -290,18 +277,15 @@ int Evaluate(link_node* SetList, link_node* Tried, int TestVariable, map* Map, v
 		AddToClause( TestVariable  , set );
 
 		null_add( &set );
-		if(ListSize(subset)>100){
-		
-					}
-		printf("subsetsize %i %i \n",count_var_pos(set),ListSize(SetList));
 
+		printf("after subsetsize %i %i \n",count_var_pos(set),ListSize(SetList));
+char out[20]= "tst";
+					Export( (set) , out);
+				//	halt();
 		solve();
 		mpz_set(saved, clause_node->data);
 		dispose(&clause_node);
-				if( mpz_cmp_ui(saved,0) == 0 ){
-					char out[20]= "tst";
-					Export( (set) , out);
-					}
+
 		gmp_printf(" clause_node->data %Zd\n ", clause_node->data);
 				
 		null_remove( &set );
@@ -340,22 +324,22 @@ int Evaluate(link_node* SetList, link_node* Tried, int TestVariable, map* Map, v
 		
 		printf("subsetsize %i %i \n",ListSize(subset),ListSize(SetList));
 	
-		//AddKnownVariables(subset);
+		AddKnownVariables(subset);
+		subset = RemoveDuplicateMembers( &subset );
 		// sort algos		
-		///subset = BinSort( subset );
-	//	subset = RemoveDuplicateMembers( &subset );
-	//	subset = GroupTogether( subset );
-	//	subset = GroupSingles( subset );
+		subset = BinSort( subset );
+		
+	//	
+		subset = GroupTogether( subset );
+		//subset = GroupSingles( subset );
 		SetNewIndex( subset , &set, GroupDictionary ,Map, &Location);
 		//	SetIndex_LH( subset , &set, GroupDictionary ,Map, &Location);
 		//RemoveDisjoint(subset,GroupDictionary, Location, &set);
 		
 		null_add( &set );
-
-		if( ListSize(subset) > 100){
-
-		}
-
+printf(" this \n ");
+char out[20]= "tst";
+					Export( (set) , out);
 		solve();
 		
 		if( mpz_cmp_ui(clause_node->data,0) ==0){
@@ -371,7 +355,6 @@ int Evaluate(link_node* SetList, link_node* Tried, int TestVariable, map* Map, v
 		dispose(&clause_node);
 				
 		gmp_printf(" 	start clause_node->data %Zd\n ", clause_node->data);
-						
 		null_remove( &set );
 
 		//reset set
@@ -388,11 +371,14 @@ int Evaluate(link_node* SetList, link_node* Tried, int TestVariable, map* Map, v
 				
 				IsChecked=link_append(abs(f_variable_connections[iter->data][variable]), IsChecked);
 				
-				
+				subset=subset->first;
 				AddKnownVariables(subset);
 				subset = RemoveDuplicateMembers( &subset );
+
+				subset = BinSort( subset );
 				subset = GroupTogether( subset );
-				subset = GroupSingles(subset);
+				
+				//subset = GroupSingles(subset);
 				//variable_node* this = CollectConnections(subset);
 				SetNewIndex( subset , &set, GroupDictionary ,Map, &Location);
 				create_new_clause(set);
@@ -404,17 +390,16 @@ int Evaluate(link_node* SetList, link_node* Tried, int TestVariable, map* Map, v
 		
 				null_add( &set );
 
-
-				solve();
 					printf(" this halt \n");
 		char out[20]= "tst";
 		Export( (set) , out);
 		null_add( &set );
+				solve();
+
 
 				if( mpz_cmp(saved,clause_node->data) ==0){
 
 					Assert_Variable( -abs(f_variable_connections[iter->data][variable]));
-									if( abs(f_variable_connections[iter->data][variable]) ==165 ) exit(0);
 						printf (" asserted %i \n", abs(f_variable_connections[iter->data][variable]));
 					printf( "set! %i \n", iter->data);
 					
@@ -422,7 +407,6 @@ int Evaluate(link_node* SetList, link_node* Tried, int TestVariable, map* Map, v
 				}
 				if( mpz_cmp_ui(clause_node->data,0) == 0){
 					printf("not_set\n");
-								if( abs(f_variable_connections[iter->data][variable]) ==165 ) exit(0);
 						printf (" asserted %i \n", abs(f_variable_connections[iter->data][variable]));
 					Assert_Variable( abs(f_variable_connections[iter->data][variable]));
 				}
@@ -439,17 +423,8 @@ int Evaluate(link_node* SetList, link_node* Tried, int TestVariable, map* Map, v
 				//reset set
 				ResetSolve();
 			
-
-			//if( mpz_cmp_ui(clause_node->data,0) == 0 ){	 printf(" eval ==-1\n"); return -1; }
 				if( mpz_cmp_ui(saved,0) == 0 ){
 							
-					//DeleteList( &Tried );
-
-					//DestroyArray( GroupDictionary );
-					//DeleteIndex( Group ,sizeof(Group) );
-					//FreeMap( Map );
-					//FreeMap( MapLocation );
-						
 					FreeMap( Map );
 					FreeMap( MapLocation );
 					FreeMap( Location );
@@ -603,6 +578,7 @@ while(1){
 
 //************************************************************************************
 	for(f;f<=(ones[0]);f++){
+	/*
 printf("*************** ones %i \n",f_variable_connections[ones[f]][1]);
 				TestVariable = f_variable_connections[ones[f]][1];
 		
@@ -634,7 +610,7 @@ printf("*************** ones %i \n",f_variable_connections[ones[f]][1]);
 
 		int eval=0;
 		int limit =2 ;
-		int LimitReached=3;
+		int LimitReached=2;
 		
 		printf(" start size %i\n ", ListSize(List));
 		
@@ -648,20 +624,19 @@ printf("*************** ones %i \n",f_variable_connections[ones[f]][1]);
 		DestroySet( SetList );
 		DestroySet( Tried );
 		DeleteIndex( Group ,VariableCount);
-
+*/
 	}
 	
 	//this is where the guess code goes
 	//halt();
 	// select an unset variable
 	//	
+	
 //****************************************************************************
-
 	TestVariable = FindUnset();
 	last=TestVariable;
 	if(TestVariable==-1)break;
 
-if( abs(TestVariable)==165) exit(0);
 
 	link_node* SetList  = NULL;
 	link_node* Tried	  = NULL;
@@ -690,7 +665,7 @@ if( abs(TestVariable)==165) exit(0);
 
 	int eval=0;
 	int limit =2 ;
-int LimitReached=4;
+int LimitReached=2;
 	
 	printf(" start size %i\n ", ListSize(List));
 	
@@ -741,7 +716,7 @@ eval=0;	link_node* SetList  = NULL;
 
 	int eval=0;
 	int limit =2 ;
-int LimitReached=4;
+int LimitReached=2;
 	printf(" start size %i\n ", ListSize(List));
 	
 	eval = SearchAndCollect(List, SetList, Tried, limit, LimitReached, GroupDictionary, abs(TestVariable), Map, Group, 0 );
