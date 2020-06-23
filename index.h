@@ -9,7 +9,6 @@ void SetIndex(int, int, variable_pos* []);
 variable_pos* SetIndex_LH(link_node*,variable_pos** , int[],map*, map**);
 
 void FreeIndex(variable_pos**);
-void FreeSet(variable_pos**);
 void FreeSearch(variable_pos**,int );
 
 int CountSet(variable_pos**);
@@ -55,7 +54,7 @@ void DestroyArray(int []);
 
 void DestroySet(link_node*);
 
-link_node* RemoveUntil(int , link_node* );
+link_node* RemoveUntil(int , link_node** );
 
 void RemoveClauseFromIndex(int, variable_pos**);
 
@@ -68,5 +67,11 @@ link_node* RemoveKnownVariable( link_node* );
 void reduce( int );
 
 variable_pos* SetNewIndex(link_node* ,variable_pos** ,int [], map* , map** );
+
+link_node* TestRest( link_node* );
+
+void FreeSet( link_node** , int);
+
+link_node* RemoveInSet(int , link_node* , link_node** , int );
 	
 #endif

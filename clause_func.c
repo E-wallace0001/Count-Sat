@@ -43,10 +43,7 @@ void pop_clause_(){
 
 variable_pos* copy_clause(int old_clause, variable_pos* set, int translation[]){
 
-//if(clause_count!=0 ){set=set->first->end;}
-
 	clause_count++;
-	
 	translation[clause_count]=old_clause;
 	set=create_clause(clause_count,(set));
 
@@ -152,6 +149,7 @@ void pop_var_clause(int clause, int this_place){
 //printf("1pop variable %i %i %i \n",clause, this_place,variable_connections[2][1]);
 //printf("clause %i this_place %i \n", clause, this_place);
 	variable_pos* this_clause= variable_position[abs(variable_connections[clause][this_place])];
+	
 
 	variable_pos* mod;
 
@@ -175,10 +173,11 @@ return;
 }
 
 if(this_clause->previous!=NULL && this_clause->next==NULL){
+		tmp = this_clause;
 		this_clause=this_clause->previous;
 		this_clause->first->end=this_clause;
 		this_clause->next=NULL;
-		free(this_clause->next);	
+		free(tmp);	
 		
 		
 	//	
@@ -187,10 +186,8 @@ return;
 
 
 		if(this_clause->next!=NULL ){
-//free(this_clause->next);	
 printf(" theres a next\n");
 exit(0);
-//halt();
 			if(this_clause->previous!=NULL){
 				this_clause->previous->next=this_clause->next;
 				this_clause->next->previous=this_clause->previous;
@@ -205,13 +202,13 @@ exit(0);
 				}
 				free(this_clause);
 			}
-		this_clause=this_clause->previous;
-		this_clause->first->end=this_clause;
-this_clause->next=NULL;
-		free(this_clause->next);	
+			this_clause=this_clause->previous;
+			this_clause->first->end=this_clause;
+			this_clause->next=NULL;
+			free(this_clause->next);	
 		
-return;
-}
+			return;
+		}
 //	pop_pos(this_clause);
 //
 	//variable_connections[this_clause->clause][this_place]=0;	
@@ -221,5 +218,117 @@ return;
 	
 }
 
+void RemoveClause(int this_clause,variable_pos** set){
+	variable_pos* prev=(*set);
 
+	(*set)=(*set)->first->end;
+
+	if((*set)->previous!=NULL){
+		prev=(*set)->previous;
+	}else{
+		prev=(*set)->first;
+	}
+
+//	printf(" copy remove this_clause %i %i \n",(*set)->clause, 0);
+
+	for(int variable = clause_size[this_clause]; variable!=0; variable--){
+		fpop_clause(this_clause, variable);
+		
+		f_variable_connections[this_clause][variable]=0;	
+	}
+//	new_old_clause[clause_count]=0;
+	f_clause_size[this_clause]=0;
+//	printf("this set %i \n", (*set)->clause);
+	pop_clause(set);
+	
+
+}
+
+
+void fpop_clause(int clause, int this_place){
+// this only turns the placement of the clause to 0
+// reorgranising the table required if you want to delete a non end;
+	//search for the position of the variable in this clause
+//printf("1pop variable %i %i %i \n",clause, this_place,variable_connections[2][1]);
+//printf("clause %i this_place %i \n", clause, this_place);
+	variable_pos* this_clause= f_variable_position[abs(f_variable_connections[clause][this_place])];
+	
+
+	variable_pos* mod;
+
+if(this_clause==NULL){printf("null var pos: pop var\n");exit(0);}
+
+if(this_clause->first->end!=NULL){
+	this_clause=this_clause->first->end;
+}
+
+
+	variable_pos* tmp;
+if(this_clause->previous==NULL && this_clause->next==NULL){
+	this_clause->clause=0;
+	this_clause->first=this_clause;
+	this_clause->end=this_clause;
+	f_variable_count--;
+	this_clause->next=NULL;
+
+	this_clause->previous=NULL;
+return;
+}
+
+if(this_clause->previous!=NULL && this_clause->next==NULL){
+		tmp = this_clause;
+		this_clause=this_clause->previous;
+		this_clause->first->end=this_clause;
+		this_clause->next=NULL;
+		free(tmp);	
+		
+		
+	//	
+return;
+}
+
+
+		if(this_clause->next!=NULL ){
+printf(" theres a next\n");
+exit(0);
+			if(this_clause->previous!=NULL){
+				this_clause->previous->next=this_clause->next;
+				this_clause->next->previous=this_clause->previous;
+				free(this_clause);
+			}
+			else{
+				this_clause->next->previous=NULL;
+				variable_pos* tmp=this_clause->next;
+				while(1){
+					tmp->first=this_clause->next;
+					tmp=tmp->next;
+				}
+				free(this_clause);
+			}
+			this_clause=this_clause->previous;
+			this_clause->first->end=this_clause;
+			this_clause->next=NULL;
+			free(this_clause->next);	
+		
+			return;
+		}
+//	pop_pos(this_clause);
+//
+	//variable_connections[this_clause->clause][this_place]=0;	
+//printf("pop\n");
+//debug_pos(this_clause);
+	// decrement the size of the clause
+	
+}
+
+void RemoveLastAssert(){
+	fpop_clause(f_clause_count, 1);
+		
+	f_variable_connections[f_clause_count][1]=0;	
+	f_clause_size[f_clause_count]=0;
+	ones[ones[0]]=0;
+	ones[0]--;
+	f_variable_connections[0][0]--;
+	f_clause_count--;
+}
 

@@ -77,7 +77,7 @@ while(set!=NULL){
 }
 
 link_node* RemoveDisjoint(link_node* set, int translate[], map* MapLocation, variable_pos** group){
-printf(" halt %i \n", set->first->data);
+printf(" halt %li \n", set->first->data);
 	link_node* iter_set=set->first;
 	while( iter_set != NULL ){
 	
@@ -94,7 +94,7 @@ printf(" halt %i \n", set->first->data);
 				if( f_variable_connections[iter_set->data ][clause] > 0 && VariableSet[ abs(f_variable_connections[iter_set->data ][clause]) ] ==0	
 				|| f_variable_connections[iter_set->data ][clause] < 0 && VariableSet[ abs(f_variable_connections[iter_set->data ][clause]) ] ==1){
 					// remove the variable from the clause
-					printf(" removed from clause %i %i %i %i\n",f_variable_connections[iter_set->data ][clause],iter_set->data, translate[1], MapGetValue( iter_set->data , MapLocation) );
+					printf(" removed from clause %i %li %i %i\n",f_variable_connections[iter_set->data ][clause],iter_set->data, translate[1], MapGetValue( iter_set->data , MapLocation) );
 					RemoveVariableFromClause( abs(f_variable_connections[ iter_set->data ][clause]), MapGetValue( iter_set->data , MapLocation), variable_position );
 
 				}
@@ -111,11 +111,10 @@ return set;
 void RemoveClauseFromIndex(int clause, variable_pos* index[] ){
 
 
-	for ( int variable=clause_size[clause]; variable!=0; variable--){
-	
+	for ( int variable=f_clause_size[clause]; variable!=0; variable--){
 		variable_pos* set = NULL;
 		
-		set = index[ abs(variable_connections[clause][variable]) ];
+		set = index[ abs(f_variable_connections[clause][variable]) ];
 		
 		while(1){
 			if( set->clause == clause ){
@@ -128,6 +127,7 @@ void RemoveClauseFromIndex(int clause, variable_pos* index[] ){
 					
 					break;
 				}
+				
 				
 				pop_clause(&set);
 				break;
@@ -143,9 +143,9 @@ void RemoveClauseFromIndex(int clause, variable_pos* index[] ){
 			}
 		}		
 		
-		variable_connections[clause][variable]=0;
+		f_variable_connections[clause][variable]=0;
 	}
-	clause_size[clause]=0;
+	f_clause_size[clause]=0;
 	
 }
 
@@ -254,7 +254,7 @@ void DeleteIndex(variable_pos* index[],int VariableCount){
 
 	variable_pos* ptr;
 
-	for (int i=1; i<VariableCount;i++){
+	for (int i=1; i<=VariableCount+1;i++){
 		ptr= index[i]->first->end;
 		while(1){
 			if(ptr->previous==NULL){
@@ -296,14 +296,12 @@ variable_pos* SetNewIndex(link_node* list,variable_pos** set,int translation[], 
 	
 	list=list->first;
 	
-	//halt();
 		while(list!=NULL){
 		
 			PutMap( list->data, Location );
 			(*set)	= copy_clause(list->data,(*set),translation);
 			list=list->next;
 		}
-
 		
 	return *set;
 }
@@ -389,38 +387,81 @@ return (count);
 int ExistInSet(int data, link_node* list){
 if(list==NULL) return 0;
 list=list->first;
-	while(list!=NULL){
+	while(1){
+	
 		if(list->data==data) return 1;
+		if(list->next==NULL) break;
 		list=list->next;
 	}
 return 0;
+}
+
+link_node* RemoveInSet(int data, link_node* list, link_node** table, int var){
+list=list->first;
+link_node* temp=NULL;
+	while(1){
+	
+		if(list->data==data){
+			if(list->previous==NULL){
+			
+				if(list->next!=NULL){ 
+					temp->next->previous==NULL;
+					temp=list;
+					while(1){
+					
+						temp->first=list->next;
+						
+						if(temp->next!=NULL) break;
+						temp=temp->next;
+					}
+					temp->first->end=temp;
+					
+					table[var]=list->next;
+					list=DeleteNode(list);
+					return NULL;
+				}else{
+					list->data=0;
+					return NULL;
+				}
+			}else{
+			DeleteNode(list);
+			return NULL;
+			}
+			
+		}
+
+		if( list->next == NULL) break;
+		list = list->next;
+	}
+	
 }
 
 link_node* RemoveDuplicateMembers( link_node** set){
 	if((*set)==NULL){printf(" this is an empty set \n"); return NULL;}
 	link_node* node = (*set)->first;
 	
-	
 	link_node* checked=NULL;
+	link_node* next;
 	
-
-	
-	
-	while(node!=NULL){
+	while(1){
 
 		if(ExistInSet( abs( node->data), checked)==1){	
-		node=	DeleteNode(node); 
-		if(node->next==NULL) break;
-		node=node->next;
-		continue;
+			printf("node data %li \n", node->data);
+			next=node->next;
+			node=	DeleteNode(node); 
+			if(next==NULL) break;
+			node=next;
+			next=NULL;
+			continue;
 		
 		 }
 		
-			checked=link_append(	abs(node->data), checked);
+		checked=link_append(	abs(node->data), checked);
+		
 		if(node->next==NULL)break;
 		node=node->next;
 	}
-	DeleteSet(&checked);
+	DeleteSet(&checked->first->end);
 	return node;
 }
 
@@ -450,18 +491,21 @@ link_node* AddMember( int data, link_node* subset ){
 }
 
 link_node* CopySet(int data, variable_pos* SetA[], link_node* SetB){
-variable_pos* temp = SetA[ abs(data) ];
 
-	while(temp!=NULL){
+	variable_pos* temp = SetA[ abs(data) ];
+
+	while(1){
+		printf(" coppy : data %i - temp->clause %i \n",data, temp->clause);
 		SetB=link_append( temp->clause, SetB);
-		
+		if(temp->next==NULL) break;
 		temp=temp->next;
 	}
-return SetB->first;;
+	
+	return SetB->first;;
 }
 
 void DeleteSet(link_node** set){
-	if( set==NULL) return;
+	if( (*set)==NULL) return;
 	(*set)=(*set)->first->end;
 	while((*set)!=NULL){
 		pop_link(set);
@@ -481,7 +525,9 @@ bool CheckSet( int data, link_node* set){
 }
 
 link_node* AddKnownVariables(link_node* set){
+
 	link_node* iter_set=set->first;
+
 	while( iter_set != NULL ){
 	
 		for ( int clause= f_clause_size[iter_set->data]; clause!=0; clause-- ) {
@@ -489,7 +535,7 @@ link_node* AddKnownVariables(link_node* set){
 			if( IsVariableSet[ abs(f_variable_connections[iter_set->data ][clause]) ] ==1 ){
 						
 				if( CheckSet( OnesPlace[abs(f_variable_connections[iter_set->data ][clause])] , set ) ==0){
-					set = AddMember(	OnesPlace[abs(f_variable_connections[iter_set->data ][clause])] ,  set );
+					set = link_append(	OnesPlace[abs(f_variable_connections[iter_set->data ][clause])] ,  set );
 				}
 			}
 
@@ -505,23 +551,23 @@ return set;
 link_node* JoinSet( link_node* SetB, link_node* SetA){
 
 	if( SetB == NULL ){ printf(" join set: NullSet\n"); exit(0);}
+	if( SetB ->data ==0 ) return SetA;
+	if( SetA == NULL  ){ return SetB; }
 
-	if( SetA == NULL ){ return SetB; }
-
-	SetB=SetB->first->end;
-	SetA= SetA->first;
-	SetB->next=SetA;
-	SetA->previous=SetB;
+	SetA=SetA->first->end;
+	SetB= SetB->first;
+	SetA->next=SetB;
+	SetB->previous=SetA;
 	
 	while(1){
-		SetA->first=SetB->first;
-		if(SetA->next==NULL) break;
-		SetA=SetA->next;	
+		SetB->first=SetA->first;
+		if(SetB->next==NULL) break;
+		SetB=SetB->next;	
 	}
 	
-	SetA->first->end=SetA;
+	SetB->first->end=SetB;
 	
-	return(SetA);
+	return(SetA->first);
 }
 
 void CreateGroup(link_node* list,variable_pos** group, map** MapLocation, map** Map){
@@ -648,6 +694,35 @@ link_node* CollectConnections ( link_node* list){
 return NewList;
 }
 
+link_node** CreateSet( int size){
+
+	link_node** Set = ( link_node**)calloc(size, sizeof(link_node) );
+	
+	for(int i = 1; i <= size;i++){
+	
+		Set[i] = (link_node*)malloc(sizeof(link_node));
+		
+		Set[i]->previous= NULL;
+		Set[i]->next 	 = NULL;
+		Set[i]->first 	 = Set[i];
+		Set[i]->end 	 = Set[i];
+		Set[i]->data	 = 0;
+	}
+	
+	return(Set);
+
+}
+
+void FreeSet( link_node** set, int size){
+
+	for(int i = 1; i <= size;i++){
+	
+		free(set[i]);
+	}
+
+	free(set);
+}	
+
 int* CreateArray( int size){
 
 	int* array=(int *)calloc( size, sizeof(int) );
@@ -660,59 +735,82 @@ void DestroyArray(int array[]){
 
 void DestroySet(link_node* subset){
 if(subset==NULL) return;
-subset=subset->first;
+
+subset=subset->first->end;
 	while(1){
 			
-		if(subset->next==NULL){ free(subset);break;}
+		if(subset->previous==NULL){ break;}
 
-		subset=subset->next;
-		free(subset->previous);
+		subset=subset->previous;
+		free(subset->next);
 	}
+	free (subset);
 }
 
 void ResetSolve(){
 	(set) = (set)->first->end;
-	while( (set) != NULL ){
+	while( 1 ){
 		RemoveFromClause( clause_count, &set );
+		
+		if( (set)==NULL) break;
+		
 	}
 }
 
 
-link_node* RemoveUntil(int End, link_node* list){
+link_node* TestRest( link_node* list){
+
+if(list==NULL) return NULL;
+	link_node* tmp=NULL;
+	list = list->first;
 	
-	list = list->first->end;
 	while(1){
 
 		if(list->previous==NULL){break;}
-if(list->previous->data==End)break;
+		tmp = list;
 		list = list->previous;
 		
-		list->next=NULL;
-		free(list->next);
+		free(tmp);
 	}
+	list->next=NULL;
+	list->first->end= list;
+	
+	
 return list;
 }
 
 
-void FreeSet(variable_pos* index[]){
-	variable_pos* ptr;
 
-	ptr=  *index;
+link_node* RemoveUntil(int End, link_node** list){
+if((*list)==NULL) return NULL;
+link_node* this = NULL;
+	link_node* tmp=NULL;
+	(*list) = (*list)->first->end;
+	if((*list)->data==End) return (*list);
+	while(1){
+
+		if((*list)->previous==NULL){break;}
+		if((*list)->data==End)break;
+		tmp=(*list);
+		(*list) = (*list)->previous;
+		free(tmp);
 		
-		while(ptr!=NULL){
-			//if( ptr->previous == NULL ){ptr->clause=0;ptr->next=NULL;ptr->first=ptr;ptr->end=ptr; break;}
-			ptr = ptr->previous;
-			
-			free(ptr->next);
-			
-			
-		}
+	}
+	(*list)->next=NULL;
+	(*list)->first->end= (*list);
+
 	
+
+	
+return (*list)->first;
 }
+
+
+
 
 void FreeSearch(variable_pos* index[], int size){
 	variable_pos* ptr;
-	for(int i=1; i<=size;i++){
+	for(int i=1; i<=size+1;i++){
 		//if(index[i]->clause==0){continue;}
 		ptr = index[i]->first->end;
 

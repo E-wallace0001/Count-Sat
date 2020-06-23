@@ -25,4 +25,10 @@ void RemoveFromClause(int, variable_pos**);
 void copy_pop_var_clause(int,int);
 void null_add(variable_pos** );
 void null_remove(variable_pos** );
+
+void fpop_clause(int , int this_place);
+void RemoveClause(int ,variable_pos** );
+
+void RemoveLastAssert();
+
 #endif

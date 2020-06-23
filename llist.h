@@ -4,7 +4,7 @@
 // node structure
 
 typedef struct link_node{
-	int data;
+	long int data;
 	struct link_node *first;
 	struct link_node *previous;
 	struct link_node *next;
@@ -60,10 +60,25 @@ link_node* GroupTogether( link_node* );
 
 int FindLargestClause( link_node* );
 
-link_node* BinSort ( link_node*);
+link_node* BinSort ( link_node**);
 
 link_node* GroupSingles( link_node* );
 
+link_node* GroupSet( link_node* );
+
+link_node** CreateSet(int );
+
+link_node* CollectVariables( link_node* , link_node** , link_node*);
+
+
+link_node* RemoveSubset(link_node**  , link_node* , link_node** , int );
+link_node* RemoveAfromB(link_node* , link_node** );
+
+link_node* NearestConnecttion( link_node* );
+link_node* MoveToPre( link_node* , link_node* );
+
+void CheckFirstNode( link_node*);
+void SetFirst(link_node*);
 
 
 #endif

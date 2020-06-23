@@ -456,21 +456,23 @@ return(count);
 }
 
 
-link_node* FindFVariableInRange( int variable,  int limit, link_node* Node){
-	if(Node == NULL) return NULL;
-	Node=Node->first;
-	while(Node!=NULL){
+link_node* FindFVariableInRange( int variable, link_node* Node){
+	if(Node == NULL) {
+		printf("null fvarng \n"); return NULL;
+	}
+	if( Node->next!=NULL) Node=Node->next;
+	while(1){
 	
 		for( int var= f_clause_size[Node->data]; var !=0; var--){
 
 			if( abs( f_variable_connections[ Node->data ][ var ] ) == abs( variable ) ){
-			printf( " variable %i \n", variable);
+				printf( " variable %i \n", variable);
 			 return Node;
 			}
 			
 		}	
 					
-		
+		if(Node->next==NULL) break;
 		Node= Node->next;
 	}
 	return NULL;

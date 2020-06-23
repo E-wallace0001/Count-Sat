@@ -294,7 +294,6 @@ int count_var_pos(variable_pos* head){
 }
 
 void Assert_Variable(int variable){
-
 	IsVariableSet[ abs(variable) ] = 1;
 
 	if(variable > 0 ){
