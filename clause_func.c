@@ -44,15 +44,17 @@ void pop_clause_(){
 variable_pos* copy_clause(int old_clause, variable_pos* set, int translation[]){
 
 	clause_count++;
-	translation[clause_count]=old_clause;
-	set=create_clause(clause_count,(set));
+	
+	translation[clause_count]	=	old_clause;
+	set								=	create_clause(clause_count,(set));
 
 	for(int variable = f_clause_size[old_clause]; variable!=0; variable--){
 		clause_size[clause_count]++;
-		append_var_clause(set->clause,f_variable_connections[old_clause][variable],variable_position);
 		
+		append_var_clause(set->clause,f_variable_connections[old_clause][variable],variable_position);
+
 	}
-//		printf("++++++++++++++++++++++++++clause_size %i \n", clause_count);
+	
 	return(set);
 }
 
@@ -103,6 +105,7 @@ void copy_removed(int this_clause,variable_pos** set){
 }
 
 void RemoveFromClause(int this_clause,variable_pos** set){
+if( *set==NULL) return;
 	variable_pos* prev=(*set);
 
 	(*set)=(*set)->first->end;
@@ -322,6 +325,9 @@ exit(0);
 }
 
 void RemoveLastAssert(){
+
+	IsVariableSet[ abs(f_variable_connections[f_clause_count][1]) ] =0;
+
 	fpop_clause(f_clause_count, 1);
 		
 	f_variable_connections[f_clause_count][1]=0;	

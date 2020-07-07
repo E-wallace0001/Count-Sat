@@ -57,19 +57,23 @@ strcat(title,file);
 iter=iter->first;
 FILE* fp2;
 fp2=fopen(title,"w");
+fprintf(fp2, "p cnf 1 %i\n", f_clause_count);
 while(1){
-
+	if( clause_size[(iter)->clause]!=0){
 	for(int variable=clause_size[(iter)->clause]; variable!=0;variable--){
 		fprintf(fp2,"%i ", variable_connections[(iter)->clause][variable]);
 	}
+	
 
 	fprintf(fp2,"0\n");
-
+	}
 	if((iter)->next!=NULL){
 		(iter)=(iter)->next;
 	}
 	else{break;}
 }
+	fprintf(fp2,"0\n");
+
 fclose (fp2);
 }
 
@@ -133,10 +137,7 @@ int k=0;
 
 }
 
-int SearchAndCollect(link_node* list, link_node* SetList,link_node* Tried, int limit, int LimitReached,int GroupDictionary[], int TestVariable, map* Map, variable_pos** Group , bool TryAll){
-
-//printf(" 		cluase %i \n", TestVariable);
-
+int SearchAndCollect(link_node* list, link_node* SetList,link_node** Tried, int limit, int LimitReached,int ClauseCount, int TestVariable , bool TryAll, int VariableCount){
 
 	int TriedSaved=0;
 
@@ -144,419 +145,218 @@ int SearchAndCollect(link_node* list, link_node* SetList,link_node* Tried, int l
 	
 	int ListEnd = SetList->first->end->data;
 
-	if(Tried!=NULL && Tried->first->end!=NULL){
-		TriedSaved=Tried->first->end->data;
+	if((*Tried)!=NULL && (*Tried)->first->end!=NULL){
+		TriedSaved=(*Tried)->first->end->data;
 	}
 
 	int eval =0;
 	link_node* new_list =NULL;
 	
 	if(list==NULL) return 0;
-	
+
+	link_node* LocalTried=NULL;
+		
 	while( list!=NULL ){
 
-		printf(" list->data %li\n", list->data);
-		if( list->data> 100000) debug_list(list);
-printf(" broke \n");
 		for( int clause = f_clause_size[list->data]; clause!=0; clause--){
-
-			if(	ExistInSet( abs(f_variable_connections[list->data][clause]), Tried) == 1 ){
+			if(	ExistInSet( abs(f_variable_connections[list->data][clause]), (*Tried)) == 1 || ExistInSet( abs(f_variable_connections[list->data][clause]), (*Tried))==1){
 				continue;
 			}
 			
-			Tried = link_append( abs(f_variable_connections[list->data][clause]) , Tried);
+			LocalTried = link_append( abs(f_variable_connections[list->data][clause]) , LocalTried);
+			
+			(*Tried) = link_append( abs(f_variable_connections[list->data][clause]) , (*Tried));
 
 			// copy all of the places of variable
 			SetList  = CopySet( abs(f_variable_connections[list->data][clause]) ,f_variable_position, SetList);
 			new_list = CopySet( abs(f_variable_connections[list->data][clause]) ,f_variable_position, new_list);
-		}
-		RemoveDuplicateMembers( &SetList );
-		RemoveDuplicateMembers( &new_list );
-		
-		
-		if( limit == LimitReached ){
+	
+			SetFirst(SetList);
+			SetFirst(new_list);
+			RemoveDuplicateMembers( &SetList );
+			RemoveDuplicateMembers( &new_list );
 			
-			printf(" limit reached %i \n",limit);
-			eval = 0;
+		
+			if( limit == LimitReached ){
+				
+				eval = 0;
+				
+				eval = Evaluate( SetList , ClauseCount, VariableCount);
+				//printf(" limit num %i %i \n",limit,ListSize(SetList));
+				//printf(" eval %i \n", eval);
+				if(TryAll==0){
+				}
+				
+				if( eval == -1) {
+					
+					RemoveUntil( TriedSaved, Tried);
+					RemoveUntil( ListEnd, &SetList);
+					DestroySet(LocalTried);
+					DestroySet(new_list);
 			
-			eval = Evaluate( SetList,  Tried, TestVariable, Map, Group , GroupDictionary, TryAll);
-			//printf(" limit num %i %i \n",limit,ListSize(SetList));
-			//printf(" eval %i \n", eval);
-			if(TryAll==0){
+					return -1;
+				}
+				
+			}else{
+				eval = 0;
+				if(new_list!=NULL) {
+
+					limit++;
+					eval = SearchAndCollect(new_list, SetList, Tried, limit, LimitReached, ClauseCount, TestVariable ,TryAll, VariableCount);
+					limit--;
+				}
+				else{
+					eval = Evaluate( SetList , ClauseCount, VariableCount);
+				
+				}
 			}
+
+			RemoveUntil( TriedSaved, Tried);
+			RemoveUntil( ListEnd, &SetList);
+			
+			DestroySet(new_list);
+			
+			new_list=NULL;
+		
+			// disjunct found, propagate back
 			
 			if( eval == -1) {
-				printf("halt eval %i \n", eval);
-					//exit(0);
+				DestroySet(LocalTried);
+				DestroySet(new_list);
+			
 				return -1;
 			}
-			
-		}else{
-		eval = 0;
-if(new_list!=NULL) {
-
-				limit++;
-				eval = SearchAndCollect(new_list, SetList, Tried, limit, LimitReached, GroupDictionary, TestVariable, Map, Group ,TryAll);
-				limit--;
-			}
-			else{
-			//eval = Evaluate( SetList,  Tried, TestVariable, Map, Group , GroupDictionary, TryAll);
-			
-			}
-		}
-
-		RemoveUntil( ListEnd, &SetList);
-		RemoveUntil( TriedSaved, &Tried);
-		DestroySet(new_list);
-		new_list=NULL;
-		// disjunct found, propagate back
-		
-		if( eval == -1) {
-			
-			//Tried=RemoveUntil( TriedSaved, Tried);
-
-			printf("halt eval %i \n", eval);
-			return -1;
 		}
 		
-
-			if(list->next!=NULL){
+		if(list->next!=NULL){
 			list=list->next;
 		}else{
 			break;
 		}
-	
 		
 	}
+		
+	DestroySet(LocalTried);
+	RemoveUntil( TriedSaved, Tried);
 	
-	//SetList=RemoveUntil(ListEnd, SetList);
-
-
-	//debug_list(SetList);LimitReached
-
-
-
-	
-	printf("returned \n");
 	return 1;
 
 }
 
-int Evaluate(link_node* SetList, link_node* Tried, int TestVariable, map* Map, variable_pos** Group , int GroupDictionary[], bool TryAll){
-
-	map* MapLocation = NULL;
+int Evaluate(link_node* SetList, int ClauseCount, int VariableCount){
 
 	mpz_t		saved;
 	mpz_init(saved);
 	
-	
-	//CreateGroup( SetList, Group, &MapLocation , &Map );
-
-	
-	link_node* FoundSet = NULL;
-	
 	link_node* subset = NULL;
-
-
-	link_node* ThisSet  = NULL;
 		
 	int savedsize=0;
 	
 	subset = copy_list(SetList);
 	
-	
-		AddKnownVariables(subset);
+	AddKnownVariables(subset);
 	
 	RemoveDuplicateMembers( &subset );
 	
-	map* Location=NULL;
-			
-	if(TryAll==0){
-	
-	
+	map* Location	= NULL;
+	map* Map 		= NULL;
 
-		if( saved==0 ){
-			return 0;
+		if( saved == 0 ){
+			exit(0);
+		//	return 0;
 		}
-			savedsize=ListSize(subset->first);
-		printf("subsetsize %i %i \n",ListSize(subset),ListSize(SetList));
-		
-		//subset = BinSort( &subset );
-		
+
+		savedsize	= ListSize(subset->first);
+
+		// Sort set		
+		BinSort( &subset );
+
 		subset = GroupSet( subset );
+
+		GroupSingles(subset);
 		
-		//SetFirst(subset);
-		//subset = GroupTogether( subset );
-		printf(" here\n");
-		//CheckFirstNode(subset);
-	//	subset= NearestConnecttion(subset);
-		SetFirst(subset);
-		//CheckFirstNode(subset);
-		//subset = GroupSingles(subset);
-	if(savedsize!= ListSize(subset)) {
-	printf("1 not the same %i %i \n", savedsize,ListSize(subset));
-	exit(0);
-	}
+		CheckFirstNode(subset);
+
+		if(savedsize!= ListSize(subset)) {
+			printf("1 not the same %i %i \n", savedsize,ListSize(subset));
+			exit(0);
+		}
+		
+		int* GroupDictionary = CreateArray( ClauseCount );
+
 
 		SetNewIndex( subset , &set, GroupDictionary ,Map, &Location);
 
-		//create_new_clause(set);
-
-		//AddToClause( TestVariable  , set );
-
 		null_add( &set );
 
-		printf("ones[0] %i after subsetsize %i %i variable %i is it set %i \n",ones[0],count_var_pos(set),ListSize(SetList),TestVariable,IsVariableSet[abs(TestVariable)]);
-		char out[20]= "tst";
-		Export( (set) , out);
-	
-		
-		
-	//	halt();
+		//printf("ones[0] %i after subsetsize %i %i variable %i is it set %i \n",ones[0],count_var_pos(set),ListSize(SetList),TestVariable,IsVariableSet[abs(TestVariable)]);
+		//char out[20]= "tst";
+		//Export( (set) , out);
+
 		solve();
-		
+
 		mpz_set(saved, clause_node->data);
 		
 		dispose(&clause_node);
-		
-				
-		null_remove( &set );
 
-		//RemoveFromClause( clause_count, &set );
+		mpz_clear(clause_node->removed);
+		mpz_clear(clause_node->data);
+		free(clause_node);
+
+		set=set->first->end;
+				
+		DestroyArray(GroupDictionary);
 		
 		//reset set
-		ResetSolve();
-
+		ResetSolve(set);
+	
 		//if( mpz_cmp_ui(clause_node->data,0) == 0 ){	 //printf(" eval ==-1\n"); return -1; }
-		
+		DestroySet(subset);
 		if( mpz_cmp_ui(saved,0) == 0 ){
 					
 			//DeleteList( &Tried );
 
 //			DestroyArray( GroupDictionary );
 			//DeleteIndex( Group ,sizeof(Group) );
-			//FreeMap( Map );
-			//FreeMap( MapLocation );
 				
-			//FreeMap( Map );
+			FreeMap( Map );
 			//FreeMap( MapLocation );
-			//FreeMap( Location );
-			DestroySet(subset);	
+			FreeMap( Location );
+				
 		//	DestroySet(subset);
 			mpz_clear( saved );
 			return -1;
 		}
-	}else{
 	
-
-		link_node* IsChecked=NULL;
-		link_node* iter = subset->first;
-		while(iter!=NULL){
-		
-		
-	//	printf("subsetsize %i %i \n",ListSize(subset),ListSize(SetList));
-	
-		AddKnownVariables(subset);
-		subset = RemoveDuplicateMembers( &subset );
-		// sort algos		
-		
-	//	subset = BinSort( &subset );
-		subset = GroupTogether( subset );
-		
-		subset = GroupSingles( subset );
-		SetNewIndex( subset , &set, GroupDictionary ,Map, &Location);
-		//	SetIndex_LH( subset , &set, GroupDictionary ,Map, &Location);
-		//RemoveDisjoint(subset,GroupDictionary, Location, &set);
-		
-		null_add( &set );
-printf(" this \n ");
-char out[20]= "tst";
-			//		Export( (set) , out);
-		solve();
-		
-		if( mpz_cmp_ui(clause_node->data,0) ==0){
-				printf(" this halt \n");
-		char out[20]= "tst";
-	//	Export( (set) , out);
-			printf ("backtrack error\n"); 
-			exit(0);
-			return -1;
-			exit(0);
-		}
-		mpz_set(saved, clause_node->data);
-		dispose(&clause_node);
-				
-		//gmp_printf(" 	start clause_node->data %Zd\n ", clause_node->data);
-		null_remove( &set );
-
-		//reset set
-		ResetSolve();
-
-		
-		
-			for( int variable = f_clause_size[iter->data]; variable!=0 ; variable--){
-			
-				printf( "var %i  \n",f_variable_connections[iter->data][variable]);
-				
-				if( IsVariableSet[ abs(f_variable_connections[iter->data][variable ]) ] ==1)			  continue;
-				if( ExistInSet( abs(f_variable_connections[iter->data][variable]), IsChecked)	 == 1 ) continue;
-				
-				IsChecked=link_append(abs(f_variable_connections[iter->data][variable]), IsChecked);
-				
-				subset=subset->first;
-				AddKnownVariables(subset);
-				subset = RemoveDuplicateMembers( &subset );
-
-				subset = BinSort( &subset );
-				subset = GroupTogether( subset );
-				
-				//subset = GroupSingles(subset);
-				//variable_node* this = CollectConnections(subset);
-				SetNewIndex( subset , &set, GroupDictionary ,Map, &Location);
-				create_new_clause(set);
-				
-				printf("subsetsize %i %i \n",count_var_pos(set),ListSize(SetList));
-				
-				
-				AddToClause( -abs(f_variable_connections[iter->data][variable])  , set );
-		
-				null_add( &set );
-
-					printf(" this halt \n");
-		char out[20]= "tst";
-	//	Export( (set) , out);
-		null_add( &set );
-				solve();
-
-
-				if( mpz_cmp(saved,clause_node->data) ==0){
-
-					Assert_Variable( -abs(f_variable_connections[iter->data][variable]));
-						printf (" asserted %i \n", abs(f_variable_connections[iter->data][variable]));
-					printf( "set! %li \n", iter->data);
-					
-					//exit(0);
-				}
-				if( mpz_cmp_ui(clause_node->data,0) == 0){
-					printf("not_set\n");
-						printf (" asserted %i \n", abs(f_variable_connections[iter->data][variable]));
-					Assert_Variable( abs(f_variable_connections[iter->data][variable]));
-				}
-
-				
-				dispose(&clause_node);
-				
-				//gmp_printf(" clause_node->data %Zd\n ", clause_node->data);
-						
-				null_remove( &set );
-
-				RemoveFromClause( clause_count, &set );
-						
-				//reset set
-				ResetSolve();
-			
-				if( mpz_cmp_ui(saved,0) == 0 ){
-							
-					FreeMap( Map );
-					FreeMap( MapLocation );
-					FreeMap( Location );
-					
-					DestroySet(subset);
-					mpz_clear( saved );
-					return -1;
-				}
-				
-			}
-			if(iter->next==NULL) break;
-			iter=iter->next;
-		}
-		
-		DestroySet(IsChecked);
-	
-	
-	}
-		
-	//FreeMap( Map );
+	FreeMap( Map );
 	//FreeMap( MapLocation );
-	//FreeMap( Location );
+	FreeMap( Location );
 		
-	//DestroySet(subset);
 	mpz_clear( saved );
 	return 1;
 }
 
-int Prove(){	
-
-	link_node* 	Set=NULL;
-	variable_pos*	node;
-	int eval=0;
-
-	for(int i=1; i<ones[0];i++){
-			
-		node=f_variable_position[ abs( f_variable_connections[ones[i]][1] ) ];
-	//	printf("\nnode dat %i %i %i \n", ones[i], node->clause, f_variable_connections[ones[i]][1]);
 
 
-		while(node!=NULL){
-
-			
-			//this finds the unset variables linked to set variables
-			for(int variable=f_clause_size[node->clause];variable!=0; variable--){
-				if( IsVariableSet[ abs(f_variable_connections[node->clause][variable]) ]==1)	continue;
-				eval=0;
-//				printf(" all node dat %i %i %i \n", node->clause, f_variable_connections[node->clause][variable], - abs(f_variable_connections[node->clause][variable]));
-				// unset-> variable f_variable_clause[node->clause][variable]
-//				eval = Evaluate( - abs(f_variable_connections[node->clause][variable]));
-//printf(" asserted %i \n", abs(f_variable_connections[node->clause][variable]));
-				if( eval == 1 ) { 
-					IsVariableSet[ abs(f_variable_connections[node->clause][variable]) ] = 1 ;
-					
-						printf (" asserted %i \n", abs(f_variable_connections[node->clause][variable]));
-					Assert_Variable( - abs(f_variable_connections[node->clause][variable]) ) ;
-					VariableSet  [abs(variable_connections[node->clause][variable])] = 0 ;
-					continue;
-				}
-				if( eval==-1) {
-				
-		//			eval = Evaluate( abs(f_variable_connections[node->clause][variable]));
-					
-					if( eval ==1 ) {
-						IsVariableSet[ abs(f_variable_connections[node->clause][variable]) ] = 1 ;
-						VariableSet  [abs(variable_connections[node->clause][variable])] =  1;
-						printf (" asserted %i \n", abs(f_variable_connections[node->clause][variable]));
-						Assert_Variable( abs(f_variable_connections[node->clause][variable]));
-					}
-					if( eval == -1 ) {
-						char out[]= "out";
-						
-						printf(" illogical assignment\n");
-						exit(0);
-					}
-				}
-				
-			}
-			node=node->next;
-			
-		}
-	}
-	printf(" exited\n");
-exit(0);
-}
-
-int FindUnset(){
+int FindUnset(link_node** tested){
 variable_pos* node;
  // for each set
 	for(int k=1; k<= ones[0]; k++ ){
-		node=f_variable_position[ abs( f_variable_connections[ones[k]][1] ) ];
-		while(node!=NULL){
+		node			 =		f_variable_position[ abs( f_variable_connections[ones[k]][1] ) ];
+		while( 1 ){
+		
 			for(int variable=f_clause_size[node->clause];variable!=0; variable--){
-				if( IsVariableSet[ abs(f_variable_connections[node->clause][variable]) ] == 0 ) { return  abs(f_variable_connections[node->clause][variable]) ; }
+				//if it's not been accounted for 
+				if( ExistInSet( abs(f_variable_connections[node->clause][variable]), *tested)==1) continue;
+					*tested 	= link_append( abs(f_variable_connections[node->clause][variable]) ,*tested);
+				//if it's not sett
+				if( IsVariableSet[ abs(f_variable_connections[node->clause][variable]) ] == 0 ) return  abs(f_variable_connections[node->clause][variable]) ; 
 			}
+			if( node->next==NULL) break;
 	 		node=node->next;
 	 	}
 	 	
  }
-printf("the end \n");
 return( -1);
 
 }
@@ -566,9 +366,6 @@ return( -1);
 
 
 void init_graph(int ones[]){
-
-
-
 
 //raw();
 
@@ -600,75 +397,49 @@ void init_graph(int ones[]){
 //0 =-1
 //1 =1
 
-//Prove();
-
 int f   = 1;
 int TestVariable = 0;
 int last =0;
+bool first=0;
+bool second =0;
+bool TryAgain=0;
+
+link_node* tested = NULL;
+link_node* guessed=NULL;
+link_node* nil = NULL;
+link_node* sub_con=NULL;
+
+bool redo=NULL;
 
 while(1){
 
 //************************************************************************************
-	for(f;f<=(ones[0]);f++){
-	/*
-printf("*************** ones %i \n",f_variable_connections[ones[f]][1]);
-				TestVariable = f_variable_connections[ones[f]][1];
-		
+//	for(f;f<=(ones[0]);f++){
+////150
 
-		link_node* SetList  = NULL;
-		link_node* Tried	  = NULL;
-		link_node* List	  = NULL;
+		TestVariable = FindUnset(&tested);
 		
-		SetList = CopySet( abs(TestVariable) ,f_variable_position, SetList);
-		List    = CopySet( abs(TestVariable) ,f_variable_position, List);
-
-		int VariableCount = 0;
+	if(TestVariable==-1 ){
+		//break;
+		TestVariable = FindUnset(&nil);
 		
-		link_node* count  = NULL;
-		link_node* PartTotal  = CollectConnections(SetList);
-		link_node* total  	 = CollectConnections(PartTotal);
-		VariableCount     	 = CountUniqueVariables(total);
-		VariableCount   	   += CountUniqueVariables(SetList);
-
-		int ClauseCount   = ListSize( total ) + ListSize( SetList );
-		
-		DeleteSet( &total );
-		DeleteSet( &PartTotal );
-		map* Map = NULL;
-		
-
-		variable_pos**	Group 			 =	CreateIndex( VariableCount );
-		int* 				GroupDictionary = CreateArray( ClauseCount );
-
-		int eval=0;
-		int limit =2 ;
-		int LimitReached=2;
-		
-		printf(" start size %i\n ", ListSize(List));
-		
-		eval = SearchAndCollect(List, SetList, Tried, limit, LimitReached, GroupDictionary, TestVariable, Map, Group, 1 );
-		if (eval==-1){
-			printf(" back track  %i last variable assigned: %i\n",TestVariable,last );
-			exit(0);
-			}	
+		sub_con = CopySet( abs(TestVariable) ,f_variable_position, sub_con);;
+		sub_con = CollectConnections(sub_con);
+		sub_con = CollectConnections(sub_con);
+		RemoveAfromB(sub_con, &tested);
+		DestroySet(sub_con);
+		sub_con=NULL;
 	
-		DestroySet( List );
-		DestroySet( SetList );
-		DestroySet( Tried );
-		DeleteIndex( Group ,VariableCount);
-*/
+		printf(" to test %i \n", TestVariable);
+		
+		if(TestVariable==-1) break;
+		
+		Assert_Variable(-abs(TestVariable));
+		guessed 	= link_append( -abs(TestVariable) ,guessed );
+		printf(" guessed %li ! \n",guessed->first->end->data);
+		
+		continue;
 	}
-	
-	//this is where the guess code goes
-	//halt();
-	// select an unset variable
-	//	
-	
-//****************************************************************************
-	TestVariable = FindUnset();
-	last=TestVariable;
-	if(TestVariable==-1)break;
-
 
 	link_node* SetList  = NULL;
 	link_node* Tried	  = NULL;
@@ -684,125 +455,165 @@ printf("*************** ones %i \n",f_variable_connections[ones[f]][1]);
 	link_node* count  = NULL;
 	link_node* PartTotal  = CollectConnections(SetList);
 	link_node* total  	 = CollectConnections(PartTotal);
-	PartTotal = CollectConnections(total);
+
 	VariableCount     	 = CountUniqueVariables(total);
 	VariableCount   	   += CountUniqueVariables(PartTotal);
 
-	int ClauseCount   = ListSize( PartTotal ) + ListSize( SetList );
+	DeleteSet( &PartTotal );
+	PartTotal = CollectConnections(total);
+	VariableCount   	   += CountUniqueVariables(PartTotal);
+
+	int ClauseCount   = VariableCount + ListSize( SetList );
 	
 	DeleteSet( &total );
 	DeleteSet( &PartTotal );
-	map* Map = NULL;
-	
 
-	variable_pos**	Group 			 =	CreateIndex( VariableCount );
-	int* 				GroupDictionary = CreateArray( ClauseCount );
 
-	int eval=0;
-	int limit =2 ;
-	int LimitReached=5;
-	//118 -430
+	int eval						= 0;
+	int limit 					= 2;
+	int LimitReached			= 2;
 	
-	//30s
-	//185variables - 38
-	//29
-	printf(" start size %i\n ", ListSize(List));
+	eval = SearchAndCollect(List, SetList, &Tried, limit, LimitReached, ClauseCount, -abs(TestVariable), 0,VariableCount);
 	
-	eval = SearchAndCollect(List, SetList, Tried, limit, LimitReached, GroupDictionary, -abs(TestVariable), Map, Group, 0 );
 	DestroySet( List );
 	DeleteSet( &SetList );
 	DeleteSet( &Tried );
-	DeleteIndex( Group ,VariableCount);
-	DestroyArray(GroupDictionary);
-//	RemoveClause(f_clause_count, f_variable_position);
-		RemoveLastAssert();
-	//FreeMap(Map);
-	
 
-
-	printf(" i %i %i eval %i\n",IsVariableSet[abs(TestVariable)], TestVariable,eval);
-	//if(abs(TestVariable)==500)exit(0);
-	if(eval==1){
-		printf(" this is the var set %i \n", -abs(TestVariable));
-		Assert_Variable( -abs(TestVariable)	 );
-		
-	}
+	RemoveLastAssert();
 	
-	if(eval==-1){
-	//if(abs(TestVariable)==5)exit(0);
-eval=0;
-	link_node* SetList  = NULL;
-	link_node* Tried	  = NULL;
-	link_node* List	  = NULL;
+	if( eval==-1) {first=1;}
+	
+	 SetList  = NULL;
+	 Tried	  = NULL;
+	 List	  = NULL;
 	
 	Assert_Variable( abs(TestVariable));
 		
 	SetList = CopySet( abs(TestVariable) ,f_variable_position, SetList);
 	List    = CopySet( abs(TestVariable) ,f_variable_position, List);
 
-	int VariableCount = 0;
+	VariableCount = 0;
 	
-	link_node* count  = NULL;
-	link_node* PartTotal  = CollectConnections(SetList);
-	link_node* total  	 = CollectConnections(PartTotal);
-	PartTotal = CollectConnections(total);
-	VariableCount     	 = CountUniqueVariables(total);
-	VariableCount   	   += CountUniqueVariables(PartTotal);
+	 count 			  = NULL;
+	 PartTotal  	  = CollectConnections(SetList);
+	 total			  = CollectConnections(PartTotal);
 
-	int ClauseCount   = ListSize( PartTotal ) + ListSize( SetList );
+	VariableCount    = CountUniqueVariables(total);
+	VariableCount   += CountUniqueVariables(PartTotal);
+
+	DeleteSet( &PartTotal );
+	
+	PartTotal 		 = CollectConnections(total);
+	VariableCount  += CountUniqueVariables(PartTotal);
+	ClauseCount		 = VariableCount + ListSize( SetList );
 	
 	DeleteSet( &total );
 	DeleteSet( &PartTotal );
-	map* Map = NULL;
 	
 
-	variable_pos**	Group 			 =	CreateIndex( VariableCount );
-	int* 				GroupDictionary = CreateArray( ClauseCount );
-
-	int eval=0;
-	int limit =2 ;
-	int LimitReached=2;
-	//118 -430
+	eval		 		 = 0 ;
+	limit 			 = 2 ;
+	LimitReached	 = 2 ;
 	
-	//30s
-	//185variables - 38
-	//29
-	printf(" start size %i\n ", ListSize(List));
+	eval 				 = SearchAndCollect(List, SetList, &Tried, limit, LimitReached, ClauseCount, abs(TestVariable), 0, VariableCount );
 	
-	eval = SearchAndCollect(List, SetList, Tried, limit, LimitReached, GroupDictionary, abs(TestVariable), Map, Group, 0 );
-	DestroySet( List );
-	DeleteSet( &SetList );
-	DeleteSet( &Tried );
-	DeleteIndex( Group ,VariableCount);
-	DestroyArray(GroupDictionary);
-//	RemoveClause(f_clause_count, f_variable_position);
-		RemoveLastAssert();
-	//FreeMap(Map);
+	DestroySet	( List );
+	DeleteSet	( &SetList );
+	DeleteSet	( &Tried );
 	
-
-
-	printf(" i %i %i eval %i\n",IsVariableSet[abs(TestVariable)], TestVariable,eval);
 	
-		if(eval==-1){ 
-		 	printf("	end illogical %i %i \n",ones[0], (TestVariable));
-		 	exit(0);;
+	RemoveLastAssert();
+	
+	if( eval  == -1 ) second=1;
+	
+	if( first == 1 && second ==1) {
+	
+		if( guessed == NULL){
+			printf("invalid \n ");
+			exit(0);
+		}
+		first  = 0;
+		second = 0;
+		redo   = 1;
+		
+		if (guessed->first->end->data<0){
+		
+			
+			while(1){
+			
+				if(f_variable_connections[f_clause_count][1] == guessed->first->end->data
+				&& f_clause_size[f_clause_count]==1){
+				
+					printf("changed guess %i !\n",abs( guessed->first->end->data));
+					
+					sub_con = CopySet( abs(guessed->first->end->data) ,f_variable_position, sub_con);;
+					sub_con = CollectConnections(sub_con);
+					sub_con = CollectConnections(sub_con);
+					RemoveAfromB(sub_con, &tested);
+					DestroySet(sub_con);
+					sub_con=NULL;
+					
+					RemoveLastAssert();
+					Assert_Variable( abs( guessed->first->end->data));
+					guessed->first->end->data =  abs( guessed->first->end->data );
+					
+					break;
+				}else{
+					RemoveLastAssert();
+				}
+			}
+		}else{
+		//1096
+			printf(" break! illogical\n");
+			exit(0);
 		}
 		
-		Assert_Variable( abs(TestVariable)	 );
-
-
+		
 	}
 	
-	printf(" end of eval %i \n", ones[0]);
+	if( first==1){
+	
+		sub_con = CopySet( abs(TestVariable) ,f_variable_position, sub_con);;
+					sub_con = CollectConnections(sub_con);
+					sub_con = CollectConnections(sub_con);
+					RemoveAfromB(sub_con, &tested);
+					DestroySet(sub_con);
+					sub_con=NULL;
+		Assert_Variable(abs(TestVariable) );
+		printf("count %i, variable %i \n",ones[0], abs(TestVariable));
+		raw();
+
+		char raw[20]="saved";
+		
+		Export(set, raw);
+		ResetSolve(set);
+		first =0;
+	}
+	
+	if(second==1){
+			sub_con = CopySet( abs(TestVariable) ,f_variable_position, sub_con);;
+		sub_con = CollectConnections(sub_con);
+		sub_con = CollectConnections(sub_con);
+		RemoveAfromB(sub_con, &tested);
+		
+		DestroySet(sub_con);
+		sub_con=NULL;
+		Assert_Variable(-abs(TestVariable) );
+		printf("count %i, variable %i \n",ones[0], -abs(TestVariable));
+		raw();
+
+		char raw[20]="saved";
+		Export(set, raw);
+		ResetSolve(set);
+				
+		second =0;
+
+	}
 	
 }	
-	
-	for (int i=1; i<=ones[0];i++){
-//	printf (" %i \n", f_variable_connections[ones[i]][1]);
-	
-	
-	}
-	
+	DeleteSet( &tested);
+
+
 	printf("end count %i %i\n", f_variable_count,ones[0]);
 	FILE* fp2;
 	fp2=fopen("out3.cnf","w");

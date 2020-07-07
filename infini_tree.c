@@ -233,8 +233,10 @@ if((*head)==NULL){printf("null head \n");exit(0);}
 			(*head)=(*head)->next;
 			free((*head)->previous);
 		}else{
-			head=NULL;
-			//free(head);
+			//mpz_clear((*head)->removed);
+			//mpz_clear((*head)->data);
+//			head=NULL;
+//			free(head);
 			break;
 		}
 	}

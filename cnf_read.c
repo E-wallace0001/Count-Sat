@@ -10,6 +10,9 @@
 
 void read_cnf(char* argv){
 
+	
+
+
 	printf(" %s\n", argv);
 
 	FILE *fp;

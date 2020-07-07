@@ -25,8 +25,8 @@ long set_variable[vsize];
 struct variable_pos* variable_position[csize];
 struct variable_pos* f_variable_position[csize];
 
-int variable_connections[vsize][50];
-int f_variable_connections[vsize][50];
+int variable_connections[vsize][90];
+int f_variable_connections[vsize][90];
 
 int clause_count;
 int f_clause_count;
@@ -38,7 +38,9 @@ void halt();
 
 unsigned int nr_variables;
 unsigned int nr_clauses;
-int variable[vsize][50];
+
+
+int variable[vsize][90];
 
 //FILE fp;
 int argc;

@@ -73,5 +73,7 @@ link_node* TestRest( link_node* );
 void FreeSet( link_node** , int);
 
 link_node* RemoveInSet(int , link_node* , link_node** , int );
+
+void CheckFirstNode( link_node*);
 	
 #endif

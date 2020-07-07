@@ -27,7 +27,7 @@ int new_old_clause[vsize];
 
 bool IsVariableSet[vsize];
 
-int Evaluate(link_node* , link_node* , int , map* , variable_pos**  , int[], bool);
+int Evaluate(link_node*  , int  , int);
 
 bool VariableSet[vsize];
 

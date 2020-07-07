@@ -68,7 +68,7 @@ link_node* GroupSet( link_node* );
 
 link_node** CreateSet(int );
 
-link_node* CollectVariables( link_node* , link_node** , link_node*);
+link_node* CollectVariables( link_node* , link_node** , link_node**);
 
 
 link_node* RemoveSubset(link_node**  , link_node* , link_node** , int );
@@ -80,5 +80,6 @@ link_node* MoveToPre( link_node* , link_node* );
 void CheckFirstNode( link_node*);
 void SetFirst(link_node*);
 
+link_node* FindNode(int, link_node** );
 
 #endif

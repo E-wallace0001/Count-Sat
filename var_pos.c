@@ -144,15 +144,65 @@ if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 				st=st->next;
 			}	
 		}else{
-				(*cursor)=NULL;
+				//
 				free(*cursor);
+				*cursor=NULL;
+			
 		}
 	//	printf("end of list \n");
 	}
 clause_count--;
 
 }
+/*void pop_clause(variable_pos* *cursor){
+if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
+clause_count--;
+	variable_pos* tmp=(*cursor);
+	variable_pos* st;
 
+	if((*cursor)->previous!=NULL){
+	//	printf("previous con %i\n",(*cursor)->clause);
+		
+		if((*cursor)->next==NULL){
+			(*cursor)=(*cursor)->previous;
+
+			(*cursor)->first->end=(*cursor);
+		
+			//tmp=(*cursor)->next;
+			
+			free((*cursor)->next);	
+			(*cursor)->next=NULL;
+
+		}else{
+			(*cursor)->previous->next=tmp->next;
+			(*cursor)->next->previous=tmp->previous;
+			free((tmp));
+		}
+	}else{
+		//if there's not a previous address
+		//printf("prev\n");
+		tmp=(*cursor);
+		if((*cursor)->next!=NULL){
+			(*cursor)=(*cursor)->next;
+			(*cursor)->previous=NULL;
+			free(tmp);
+			
+			st=(*cursor)->next;
+			while(st!=NULL){
+				st->first=(*cursor);
+				st=st->next;
+			}
+			st->first->end=st;
+		}else{
+				//(*cursor)=NULL;
+				free(*cursor);
+		}
+	//	printf("end of list \n");
+	}
+
+
+}
+*/
 void RemoveFVariablePosition(variable_pos* cursor, int var){
 
 if((cursor)==NULL){printf(" null pass ptr\n");exit(0);}

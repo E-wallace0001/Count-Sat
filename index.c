@@ -446,7 +446,7 @@ link_node* RemoveDuplicateMembers( link_node** set){
 	while(1){
 
 		if(ExistInSet( abs( node->data), checked)==1){	
-			printf("node data %li \n", node->data);
+			//printf("node data %li \n", node->data);
 			next=node->next;
 			node=	DeleteNode(node); 
 			if(next==NULL) break;
@@ -457,7 +457,7 @@ link_node* RemoveDuplicateMembers( link_node** set){
 		 }
 		
 		checked=link_append(	abs(node->data), checked);
-		
+		SetFirst(checked);
 		if(node->next==NULL)break;
 		node=node->next;
 	}
@@ -495,7 +495,7 @@ link_node* CopySet(int data, variable_pos* SetA[], link_node* SetB){
 	variable_pos* temp = SetA[ abs(data) ];
 
 	while(1){
-		printf(" coppy : data %i - temp->clause %i \n",data, temp->clause);
+	//	printf(" coppy : data %i - temp->clause %i \n",data, temp->clause);
 		SetB=link_append( temp->clause, SetB);
 		if(temp->next==NULL) break;
 		temp=temp->next;
@@ -506,9 +506,14 @@ link_node* CopySet(int data, variable_pos* SetA[], link_node* SetB){
 
 void DeleteSet(link_node** set){
 	if( (*set)==NULL) return;
+
 	(*set)=(*set)->first->end;
-	while((*set)!=NULL){
-		pop_link(set);
+	link_node* tmp=NULL;
+	while(1){
+		if((*set)->previous==NULL) {free(*set);return;}
+		tmp=(*set);
+		(*set)=(*set)->previous;
+		free(tmp);
 	}
 
 }
@@ -664,11 +669,10 @@ link_node* CollectConnections ( link_node* list){
 
 	if(list==NULL) exit(0);
 
-	link_node* VariableVisited=NULL;
-
-	list=list->first;
-	variable_pos* temp;
-	link_node* NewList=NULL;
+	link_node* VariableVisited	= NULL;
+	list								= list->first;
+	variable_pos* temp			= NULL;
+	link_node* NewList			= NULL;
 	
 	while( 1 ){
 	
@@ -680,8 +684,9 @@ link_node* CollectConnections ( link_node* list){
 
 			temp = f_variable_position[ abs(f_variable_connections[list->data][variable]) ];
 			
-			while(temp!=NULL){
+			while(1){
 				NewList=link_append(temp->clause,NewList);
+				if(temp->next==NULL) break;
 				temp=temp->next;
 			}
 		}
@@ -698,7 +703,7 @@ link_node** CreateSet( int size){
 
 	link_node** Set = ( link_node**)calloc(size, sizeof(link_node) );
 	
-	for(int i = 1; i <= size;i++){
+	for(int i = 0; i <= size;i++){
 	
 		Set[i] = (link_node*)malloc(sizeof(link_node));
 		
@@ -714,9 +719,19 @@ link_node** CreateSet( int size){
 }
 
 void FreeSet( link_node** set, int size){
-
-	for(int i = 1; i <= size;i++){
-	
+link_node* list= NULL;
+link_node* tmp=NULL;
+	for(int i = 0; i <= size;i++){
+		if(set[i]==NULL) continue;
+		list=set[i];
+		list=list->end;
+		while(1){
+			if( list->previous==NULL) break;
+			tmp=list;
+			list=list->previous;	
+			free( tmp);
+		}
+		
 		free(set[i]);
 	}
 
@@ -782,17 +797,23 @@ return list;
 
 
 link_node* RemoveUntil(int End, link_node** list){
-if((*list)==NULL) return NULL;
-link_node* this = NULL;
-	link_node* tmp=NULL;
-	(*list) = (*list)->first->end;
+
+	if((*list)==NULL) return NULL;
+	
+	link_node* this 	= NULL;
+	link_node* tmp		=NULL;
+	
+	(*list) 				= (*list)->first->end;
+	
 	if((*list)->data==End) return (*list);
+
 	while(1){
 
 		if((*list)->previous==NULL){break;}
 		if((*list)->data==End)break;
 		tmp=(*list);
 		(*list) = (*list)->previous;
+		(*list)->next=NULL;
 		free(tmp);
 		
 	}
@@ -802,10 +823,47 @@ link_node* this = NULL;
 	
 
 	
-return (*list)->first;
+return (*list);
 }
 
+void SetFirst( link_node* head){
+if( head==NULL) return;
+link_node* first=NULL;
 
+while(1){
+	if(head->previous==NULL) break;
+	
+	head=head->previous;
+	
+}
+first=head;
+while(1){
+head->first=first;
+if(head->next==NULL) break;
+head=head->next;
+}
+head->first->end=head;
+}
+
+void CheckFirstNode( link_node* head){
+if( head==NULL) return;
+link_node* first=NULL;
+
+while(1){
+	if(head->previous==NULL) break;
+	
+	head=head->previous;
+	
+}
+first=head;
+while(1){
+
+if( head->first !=first) exit(0);
+if(head->next==NULL) break;
+head=head->next;
+}
+head->first->end=head;
+}
 
 
 void FreeSearch(variable_pos* index[], int size){
