@@ -101,41 +101,7 @@ return(0);
 
 }
 	
-void SetOnes(){
-int k=0;
-	for(int variable=1;variable<=ones[0];variable++){
-		if(variable_position[abs(f_variable_connections[ones[variable]][1])]->clause==0 ){
-			continue;
-		}
 
-			k=f_variable_connections[ones[variable]][1];
-			set_variable[abs(k)]=k;
-			counted_set[abs(k)]=1;
-			set_var[abs(k)]=1;
-			var_tab[abs(k)]++;
-			counted_for++;
-	}
-
-}
-
-
-void ReSetOnes(){
-int k=0;
-	for(int variable=1;variable<=ones[0];variable++){
-		if(variable_position[abs(f_variable_connections[ones[variable]][1])]->clause==0 ){
-			continue;
-		}
-
-			k=f_variable_connections[ones[variable]][1];
-			set_variable[abs(k)]=0;
-			counted_set[abs(k)]=0;
-			set_var[abs(k)]=0;
-			var_tab[abs(k)]--;
-			counted_for--;
-			
-	}
-
-}
 
 int SearchAndCollect(link_node* list, link_node* SetList,link_node** Tried, int limit, int LimitReached,int ClauseCount, int TestVariable , bool TryAll, int VariableCount){
 
@@ -247,6 +213,9 @@ int Evaluate(link_node* SetList, int ClauseCount, int VariableCount){
 
 	mpz_t		saved;
 	mpz_init(saved);
+	
+	variable_pos* init_position
+	init_position(variable_position);
 	
 	link_node* subset = NULL;
 		
@@ -574,11 +543,12 @@ while(1){
 	if( first==1){
 	
 		sub_con = CopySet( abs(TestVariable) ,f_variable_position, sub_con);;
-					sub_con = CollectConnections(sub_con);
-					sub_con = CollectConnections(sub_con);
-					RemoveAfromB(sub_con, &tested);
-					DestroySet(sub_con);
-					sub_con=NULL;
+		sub_con = CollectConnections(sub_con);
+		sub_con = CollectConnections(sub_con);
+		RemoveAfromB(sub_con, &tested);
+		DestroySet(sub_con);
+		sub_con=NULL;
+		
 		Assert_Variable(abs(TestVariable) );
 		printf("count %i, variable %i \n",ones[0], abs(TestVariable));
 		raw();
@@ -591,7 +561,7 @@ while(1){
 	}
 	
 	if(second==1){
-			sub_con = CopySet( abs(TestVariable) ,f_variable_position, sub_con);;
+		sub_con = CopySet( abs(TestVariable) ,f_variable_position, sub_con);;
 		sub_con = CollectConnections(sub_con);
 		sub_con = CollectConnections(sub_con);
 		RemoveAfromB(sub_con, &tested);

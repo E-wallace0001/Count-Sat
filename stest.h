@@ -1,10 +1,24 @@
 #ifndef STEST_C
 #define STEST_C
 
-//#include "infini_tree.h"
+#include "infini_tree.h"
 
 #define vsize 900000
 #define csize 900000
+
+
+struct ComLine{
+
+	struct variable_pos**	variable_position;
+	int **						variable_connections;
+};
+
+typedef struct ComLine com_line;
+
+void init_position(struct variable_pos**);
+
+void post_branch_correct(int,int,int,int,node*, com_line*);
+void pre_branch_correct(int, int, int, node*, node*,node*,com_line*);
 
 
 int ones[csize];
