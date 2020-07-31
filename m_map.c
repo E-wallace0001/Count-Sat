@@ -66,6 +66,7 @@
 	void* alloc_mem(m_map* heap){
 		if( heap==NULL){
 			printf(" alloc_mem err: NULL HEAP\n");
+			exit(0);
 		}
 		if ( heap->list_start->next == NULL) {
 	//		printf(" end of list \n");

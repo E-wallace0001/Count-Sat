@@ -210,7 +210,7 @@ com_line* memory_init(){
 
 	com_line* memory_initalize;
 	memory_initalize =  malloc( sizeof(com_line));
-/*	
+	
 	int* clause_size= calloc(csize, sizeof(int*));
 	
 	//create a table for processing purposes
@@ -223,12 +223,12 @@ com_line* memory_init(){
 	}
 	
 	long* set_variable					= calloc( csize, sizeof(long));
-
-	variable_pos** variable_position = calloc(csize,sizeof(variable_pos));
 	
-	if (variable_position==NULL) exit(0);
-	//init_position(variable_position);
-*/
+	variable_pos* variable_position[csize] ;
+	
+	//if (variable_position==NULL) exit(0);
+	init_position(variable_position);
+
 	bool*		set_var								= calloc(csize, sizeof(bool));
 	int*		var_tab								= calloc(vsize, sizeof(int));
 	m_map*	node_pool							= init_mem( sizeof(node), 1024 );
@@ -239,6 +239,12 @@ com_line* memory_init(){
 	memory_initalize->link_pool				= link_pool;
 	memory_initalize->com_pool					= com_pool;
 	memory_initalize->job_mem					= job_mem;
+	
+	memory_initalize->clause_size				= clause_size;
+	memory_initalize->clause_connections	= clause_connections;
+	memory_initalize->variable_position		= variable_position;
+	memory_initalize->set_variable			= set_variable;
+	memory_initalize->set_var					= set_var;
 	return memory_initalize;
 
 

@@ -44,7 +44,7 @@ void pop_clause_(){
 variable_pos* copy_clause(int old_clause, int translation[], com_line* Coms){
 
 	variable_pos* set						= Coms->set;
-	variable_pos* variable_position = *Coms->variable_position;
+	variable_pos* variable_position = variable_position;
 	
 	
 	Coms->clause_count++;

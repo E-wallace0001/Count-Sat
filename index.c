@@ -614,7 +614,7 @@ void ResetSolve(com_line* Coms){
 
 		RemoveFromClause( set->first->end->clause ,Coms);
 		
-		if( set->first->end==NULL) break;
+		if( set->first->end==NULL || set==NULL) break;
 		
 	}
 }

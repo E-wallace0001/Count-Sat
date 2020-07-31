@@ -140,24 +140,24 @@ if( arg_a ==NULL) exit(0);
 	while( arg_p->list!=NULL ){
 		new_list =NULL;
 		for( int clause = f_clause_size[arg_p->list->data]; clause!=0; clause--){
-		/*
+		
 			if(	ExistInSet( abs(f_variable_connections[arg_p->list->data][clause]), (Tried)) == 1 || 	ExistInSet( abs(f_variable_connections[arg_p->list->data][clause]), (Tried))==1){
 				continue;
-			}*/
+			}
 			
 			//LocalTried = link_append( abs(f_variable_connections[arg_p->list->data][clause]) , LocalTried,arg_p);
 			
-			//(Tried) = link_append( abs(f_variable_connections[arg_p->list->data][clause]) , (Tried),arg_p);
+			(Tried) = link_append( abs(f_variable_connections[arg_p->list->data][clause]) , (Tried),arg_p);
 
 			// copy all of the places of variable
-			//SetList  = CopySet( abs(f_variable_connections[arg_p->list->data][clause]) ,f_variable_position, SetList,arg_p);
+			SetList  = CopySet( abs(f_variable_connections[arg_p->list->data][clause]) ,f_variable_position, SetList,arg_p);
 			
-			//new_list = CopySet( abs(f_variable_connections[arg_p->list->data][clause]) ,f_variable_position, new_list, arg_p);
+			new_list = CopySet( abs(f_variable_connections[arg_p->list->data][clause]) ,f_variable_position, new_list, arg_p);
 	
 			//SetFirst(SetList);
 			//SetFirst(new_list);
-			//RemoveDuplicateMembers( &SetList, arg_p );
-			//RemoveDuplicateMembers( &new_list, arg_p );
+			RemoveDuplicateMembers( &SetList, arg_p );
+			RemoveDuplicateMembers( &new_list, arg_p );
 			
 			if( arg_p->limit==3){
 				//exit(0);
@@ -165,7 +165,7 @@ if( arg_a ==NULL) exit(0);
 	 		}
 	 		
 			if( arg_p->limit == arg_p->LimitReached ){
-			
+//			 printf(" data %p \n", arg_p);
 //printf("ones[0] after subsetsize %i  \n",ListSize(arg_p->SetList));
 			
 			//link_node* t = arg_p->SetList;
@@ -177,38 +177,10 @@ if( arg_a ==NULL) exit(0);
 				com_line* arg_t =  alloc_mem(arg_p->com_pool);
 				//
 				//arg_t							= malloc(sizeof(*arg_t));
-				
-	//			arg_t-> SetList			= malloc(sizeof(variable_pos));
-	for (int t=0; t<1000; t++){
+				arg_t->list				= copy_list(arg_p->SetList,arg_p);
+				arg_t->SetList			= copy_list(arg_p->SetList,arg_p);
+				arg_t->node_pool		= arg_p->node_pool;
 	
-				arg_t-> SetList 			= copy_list(arg_p->SetList,arg_p);
-				/*
-				//link_node* t = arg_p->SetList;
-				
-				//arg_t-> set 				= malloc(sizeof(*arg_t->set));;
-				arg_t-> ClauseArraySize = arg_p->ClauseCount;
-				arg_t-> VariableCount	= arg_p->VariableCount;
-				arg_t-> variable_count	= 0 ;
-				arg_t-> clause_count 	= 0;
-				
-				
-				//arg_t-> set_var			= calloc( csize, sizeof( bool));
-				
-	//			arg_t->f_clause_size = arg_p->f_clause_size;
-				
-	//			arg_t-> clause_node		= malloc(sizeof(node*));
-				
-				arg_t-> clause_size			= arg_p->clause_size;
-				arg_t->set_var					= arg_p->set_var;
-				arg_t->clause_connections	= arg_p->clause_connections;
-				arg_t->variable_position	= arg_p->variable_position;
-				arg_t->set_variable			= arg_p->set_variable;
-				arg_t->var_tab					= arg_p->var_tab;
-			*/
-		//	usleep(1000);
-				DeleteList(&arg_t-> SetList, arg_p);
-			}
-				//DeleteList(&SetList, arg_p);
 				//DeleteList(&Tried, arg_p);
 				//DeleteList(&new_list, arg_p);
 				
@@ -219,10 +191,20 @@ if( arg_a ==NULL) exit(0);
 		//DestroySet(arg_t->SetList);
 		//free(arg_t);
 				// this is where the job for the multi threaded workload is to go
-			
+					arg_t->ClauseCount		= arg_p->ClauseCount;
+					arg_t->VariableCount	= arg_p->VariableCount;
+					arg_t->clause_size	= arg_p->clause_size;
+					arg_t->set_var			= arg_p->set_var;
+					arg_t->link_pool		= arg_p->link_pool;
+					arg_t->node_pool		= arg_p->node_pool;
+					arg_t->com_pool		= arg_p->com_pool;
+					arg_t->job_mem			= arg_p->job_mem;
+					arg_t->set_variable		= arg_p->set_variable;
+					arg_t->variable_position = arg_p->variable_position;
 				
-				//Evaluate( arg_t);
-				
+				Evaluate( arg_p);
+				DestroySet(arg_t->SetList, arg_p);
+				DestroySet(arg_t->list, arg_p);
 				//ListAddWork(WorkerBees,Evaluate,arg_t);
 				//work_count++;
 				//arg_t-> SetList			= malloc(sizeof(variable_pos));
@@ -237,7 +219,7 @@ if( arg_a ==NULL) exit(0);
 		//DestroySet(arg_p->Tried, arg_p);
 		//DeleteSet(&arg_p->SetList, arg_p);
 		//release_mem(arg_p, arg_p->com_pool);
-				return;
+			//	return;
 				
 			}else{
 				eval = 0;
@@ -246,30 +228,43 @@ if( arg_a ==NULL) exit(0);
 				//arg_p->limit++;
 					//if(new_list==NULL) break;
 					//printf(" lim %i \n",arg_p->limit);
-					//link_node* temp = copy_list(Tried,arg_p);
+					link_node* temp = copy_list(Tried,arg_p);
 					//com_line* data = malloc(sizeof(*data));
 					com_line* data = alloc_mem( arg_p->com_pool );
 					
 					data->list				= copy_list(SetList,arg_p);
 					data->SetList			= copy_list(arg_p->SetList,arg_p);
-					//data->Tried				= temp;
+					data->Tried				= temp;
 					data->limit 			= arg_p->limit+1;
 					data->LimitReached	= arg_p->LimitReached;
-					//data->ClauseCount		= arg_p->ClauseCount;
-					//data->VariableCount	= arg_p->VariableCount;
-					//data->clause_size		= arg_p->clause_size;
-					//data->set_var			= arg_p->set_var;
-					//data->link_pool		= arg_p->link_pool;
-					//data->node_pool		= arg_p->node_pool;
-					//data->com_pool			= arg_p->com_pool;
-					//data->job_mem			= arg_p->job_mem;
+					data->ClauseCount		= arg_p->ClauseCount;
+					data->VariableCount	= arg_p->VariableCount;
+					data->clause_size		= arg_p->clause_size;
+					data->set_variable		= arg_p->set_variable;
+					data->set_var			= arg_p->set_var;
+					data->link_pool		= arg_p->link_pool;
+					data->node_pool		= arg_p->node_pool;
+					data->com_pool			= arg_p->com_pool;
+					data->job_mem			= arg_p->job_mem;
+					data->variable_position = arg_p->variable_position;
+					data->clause_connections = arg_p->clause_connections;
 				//	printf("%li \n",data->SetList->first->data);
 				//	printf(" lim %i %i \n",arg_p->limit, data->limit);
 					
-					ListAddWork(WorkerBees,SearchAndCollect,data);
-					usleep(5);
-	
-			//SearchAndCollect(data);
+					//ListAddWork(WorkerBees,SearchAndCollect,data);
+					//usleep(5);
+					pid_t pid;
+					//pid = fork();
+	SearchAndCollect(data);
+					if(pid==-1){
+						printf("error craing fork \n");
+						exit(0);
+					}
+					if( pid==0){
+						// printf(" data %p \n", data);
+					//	SearchAndCollect(data);
+					//	exit(0);
+					}
 					//arg_p->limit--;
 				//}
 				//else{
@@ -326,7 +321,7 @@ void Evaluate(void *arg_v){
 com_line* arg_t= arg_v;
 
 //usleep(10);
-	/*
+	
 	//arg_t=(com_line*) arg_t;
 
 	link_node* subset = arg_t->SetList;
@@ -384,7 +379,8 @@ com_line* arg_t= arg_v;
 
 		mpz_clear(arg_t->clause_node->removed);
 		mpz_clear(arg_t->clause_node->data);
-		free(arg_t->clause_node);
+		//free(arg_t->clause_node);
+		release_mem(arg_t->clause_node,arg_t->node_pool);
 
 
 		
@@ -405,7 +401,7 @@ com_line* arg_t= arg_v;
 					
 			
 		}
-*/
+
 		
 
 //free(arg_t->set_var);
@@ -563,18 +559,23 @@ while(1){
 	com_line* data;
 	//link_node* try_copy = copy_list(Tried);
 	//data = malloc(sizeof(*data));
-	data = alloc_mem( boss->com_pool );
-	data->list				= copy_list(List,boss);
-	data->SetList			= copy_list(SetList,boss);
+	 data = alloc_mem( boss->com_pool );
+	data->list				= copy_list(List, boss);
+	data->SetList			= copy_list(SetList, boss);
 	data->Tried				= Tried;
 	data->limit 			= limit;
 	data->LimitReached	= LimitReached;
 	data->ClauseCount		= ClauseCount;
 	data->VariableCount	= VariableCount;
+	data->clause_size		= boss->clause_size;
+	data->variable_position = boss-> variable_position;
 	data->link_pool		= boss->link_pool;
 	data->node_pool		= boss->node_pool;
 	data->com_pool			= boss->com_pool;
 	data->job_mem			= boss->job_mem;
+	data->set_var			= boss->set_var;
+	data->set_variable		= boss->set_variable;
+	data->clause_connections = boss->clause_connections;
 	SearchAndCollect(data);
 	eval=0;
 	usleep(10);
@@ -643,10 +644,16 @@ while(1){
 	data->LimitReached	= LimitReached;
 	data->ClauseCount		= ClauseCount;
 	data->VariableCount	= VariableCount;
+	data->clause_size		= boss->clause_size;
+	data->variable_position = boss->variable_position;
+	data->clause_connections = boss->clause_connections;
+	data->set_variable		= boss->set_variable;
 	data->link_pool		= boss->link_pool;
 	data->node_pool		= boss->node_pool;
 	data->com_pool			= boss->com_pool;
 	data->job_mem			= boss->job_mem;
+	data->set_var			= boss->set_var;
+	data->set_var			= boss->set_var;
 	SearchAndCollect(data );
 	
 	WaitForWorkers(WorkerBees);

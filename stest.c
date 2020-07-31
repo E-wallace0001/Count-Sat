@@ -1604,7 +1604,7 @@ void solve(com_line* Coms){
 	//mpz_set(pnt->data,sub_total);
 	Coms->clause_node= clause_node;
 	//gmp_printf("removed %Zd   \n",clause_node->next_layer->end->data);
-	//gmp_printf("2 total %Zd  possible %Zd var count %i   \n",sub_total,all_possible,variable_count);
+	gmp_printf("2 total %Zd  possible %Zd var count %i   \n",sub_total,all_possible,variable_count);
 	if( mpz_cmp_ui( sub_total, 0)==-1){
 		//halt();
 	}
