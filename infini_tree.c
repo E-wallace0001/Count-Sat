@@ -4,15 +4,19 @@
 #include <math.h>
 #include <stdbool.h>
 #include "stest.h"
-#include "infini_tree.h"
 #include "var_pos.h"
+#include "infini_tree.h"
+
 #include "llist.h"
 #include "bfs_s.h"
 #include "clause_func.h"
 #include "cnf_read.h"
 #include <gmp.h>
-
 #include <assert.h>
+
+#include "m_map.h"
+
+
 // node structure
 
 /*
@@ -119,8 +123,9 @@ static inline node* prepend_clause(int clause, node* head){
 */
 
 
-node* create(int clause,mpz_t data,node* next_layer, node* previous_layer, node* previous, node* next,mpz_t removed,int size){
-	node* new_node = (node*)malloc(sizeof(node));
+node* create(int clause,mpz_t data,node* next_layer, node* previous_layer, node* previous, node* next,mpz_t removed,com_line* Coms){
+ //node* new_node = (node*)malloc(sizeof(node));
+	node* new_node = alloc_mem(Coms->node_pool);
 	if(new_node==NULL){
 		printf("error creating a new node in create. \n");
 		exit(0);
@@ -140,7 +145,7 @@ node* create(int clause,mpz_t data,node* next_layer, node* previous_layer, node*
 }
 
 // relase from list
-static inline void pop(node* cursor){
+static inline void pop(node* cursor,com_line* Coms){
 	if(cursor->next!=NULL){
 		node* next = cursor -> next;
 		next -> previous= cursor -> previous;
@@ -150,8 +155,9 @@ static inline void pop(node* cursor){
 	else{
 		cursor -> previous =NULL;
 	}
-
-	free(cursor);
+	//free(cursor);
+	release_mem(cursor, Coms->node_pool);
+	
 }
 
 static inline int count(node* head){
@@ -177,12 +183,10 @@ int count_node(node* head){
 	}
 	return (count);
 }
-node* append_clause(int clause, node* head, node* previous_layer,mpz_t data, mpz_t removed_data,int size){
 
+node* append_clause(int clause, node* head, node* previous_layer,mpz_t data, mpz_t removed_data, com_line* Coms){
 
-//if(head==NULL){printf("no node\n");exit(0);}
-
-	node* new_node=create(clause, data,NULL, previous_layer,head,NULL,removed_data,size);
+	node* new_node=create(clause, data,NULL, previous_layer,head,NULL,removed_data,Coms);
 	
 	if(head!=NULL){
 
@@ -195,13 +199,13 @@ node* append_clause(int clause, node* head, node* previous_layer,mpz_t data, mpz
 		new_node->first_clause=new_node;
 	}
 
-	head = new_node;
-	return head;
+	return new_node;
 
 }
 
-node* append_layer(int clause, node* head,node* previous_layer, mpz_t data,int size){
-	node* new_node=create(clause, data, NULL, head,NULL,NULL,data,size);
+node* append_layer(int clause, node* head,node* previous_layer, mpz_t data,com_line* Coms){
+
+	node* new_node=create(clause, data, NULL, head,NULL,NULL,data,Coms);
 
 	new_node->clause=clause;
 	
@@ -216,14 +220,15 @@ node* append_layer(int clause, node* head,node* previous_layer, mpz_t data,int s
 	return new_node;
 }
 
-void dispose(node** head){
+void dispose(node** head,com_line* Coms){
 if((*head)==NULL){printf("null head \n");exit(0);}
 	while(1){
 		if( (*head)->next_layer!=NULL){
-			dispose(&((*head)->next_layer));
+			dispose(&((*head)->next_layer),Coms);
 			mpz_clear((*head)->next_layer->removed);
 			mpz_clear((*head)->next_layer->data);
-			free((*head)->next_layer);
+			//free((*head)->next_layer);
+			release_mem((*head)->next_layer, Coms->node_pool);
 		}
 
 
@@ -231,7 +236,8 @@ if((*head)==NULL){printf("null head \n");exit(0);}
 			mpz_clear((*head)->removed);
 			mpz_clear((*head)->data);
 			(*head)=(*head)->next;
-			free((*head)->previous);
+			//free((*head)->previous);
+			release_mem((*head)->previous, Coms->node_pool);
 		}else{
 			//mpz_clear((*head)->removed);
 			//mpz_clear((*head)->data);

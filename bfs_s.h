@@ -14,20 +14,42 @@ static inline layer* set_layer(int num, int lim){
 return new_layer;
 }
 
+typedef struct graph_layer{
+
+struct link_node* list;
+struct link_node* SetList;
+struct link_node* Tried;
+int limit;
+int LimitReached;
+int ClauseCount;
+int VariableCount;
+int**							clause_connections;
+struct variable_pos**	variable_position;
+long* set_variable;
+int* var_tab;
+int* clause_size;
+bool set_var;
+		//argt->clause_connections	= clause_connections;
+		//argt->variable_position		= variable_position;
+		//argt->set_variable			= set_variable;
+		//argt->var_tab					= var_tab;
+
+} graph_l;
+
 void raw();
 
-variable_pos* set;
 
-void bfs_graph( layer*,link_node* );
+
+void bfs_graph( layer*, struct link_node* );
 
 bool clause_visited[csize];
 bool counted_set[vsize];
-void init_graph();
+void init_graph(int*);
 int new_old_clause[vsize];
 
 bool IsVariableSet[vsize];
 
-int Evaluate(link_node*  , int  , int);
+void Evaluate( void* );
 
 bool VariableSet[vsize];
 

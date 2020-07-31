@@ -2,6 +2,8 @@
 #define VAR_POS_H
 
 // variable_pos structure
+#include "stest.h"
+
 
 typedef struct variable_pos{
 	
@@ -20,26 +22,27 @@ typedef struct variable_pos{
 
 variable_pos* make_clause(int);
 
-variable_pos* create_clause(int ,variable_pos* );
+variable_pos* create_clause(com_line* );
 
 variable_pos* append_variable(int , variable_pos*);
 
 
 // relase from list
-void pop_clause(variable_pos* * );
+void pop_clause(variable_pos**, com_line* );
 
 int count_var_pos(variable_pos*);
 
-void debug_pos(variable_pos*);
+void debug_pos(variable_pos*, com_line*);
 
 
 struct variable_pos* search_var_pos(int ,variable_pos*);
 
 void Assert_Variable(int variable);
 
-void RemoveVariablePosition(variable_pos*,int var);
+	
 
+void RemoveFVariablePosition(variable_pos*,int var, com_line*);
 
-void RemoveFVariablePosition(variable_pos*,int var);
+void RemoveConnection(variable_pos* , int , variable_pos** );
 
 #endif

@@ -1,16 +1,17 @@
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
 
-#include "llist.h"
-#include "var_pos.h"
+
 #include "stest.h"
+#include "var_pos.h"
+#include "llist.h"
 #include "bfs_s.h"
 #include "index.h"
+
 void dispose_var_pos(variable_pos *head)
 {
 	variable_pos *cursor, *tmp;
@@ -40,40 +41,46 @@ variable_pos* make_clause(int clause){
 	return new_clause;
 }
 
-inline variable_pos* create_clause(int clause,variable_pos* previous){
-	variable_pos* new_clause=make_clause(clause);
+variable_pos* create_clause(com_line* Coms){
+
+	int clause						= Coms->clause_count;
+	//variable_pos* previous 		= NULL;
+	variable_pos* previous			= Coms->set;
+	variable_pos* new_clause	= make_clause(clause);
 	variable_pos* tmp;
+	
+	
 	
 	
 	if(previous!=NULL ){
 
-	new_clause->previous=previous;
-
-	new_clause->first=previous->first;
-	new_clause->next=NULL;
-	previous->next=new_clause;
-
-	new_clause->first->end=new_clause;
+		new_clause->previous		= previous;
+		new_clause->first			= previous->first;
+		new_clause->next			= NULL;
+		previous->next				= new_clause;
+		new_clause->first->end	= new_clause;
 	
-	}
-	else{
-		new_clause->clause=clause;
-		new_clause->end=new_clause;
-		new_clause->first=new_clause;
-		new_clause->previous=NULL;
-		new_clause->next=NULL;
-
+	}else{
+		new_clause->clause		= clause;
+		new_clause->end			= new_clause;
+		new_clause->first			= new_clause;
+		new_clause->previous		= NULL;
+		new_clause->next			= NULL;
 	}
 
 	return new_clause;
 }
 
+
+
+
 inline variable_pos* append_variable(int clause, variable_pos* head){
 //	variable_pos* new_variable_pos=create_pos(clause, head);
 	
 	variable_pos* new_variable_pos;
-	
-	head=head->first->end;
+	if( head!=NULL){
+		head=head->first->end;
+	}
 	if(head->clause==0){
 		head->clause=clause;
 		return head;
@@ -103,7 +110,7 @@ inline variable_pos* append_variable(int clause, variable_pos* head){
 
 
 // release from list
-void pop_clause(variable_pos* *cursor){
+void pop_clause(variable_pos**cursor, com_line* Coms){
 if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 	variable_pos* tmp=(*cursor);
 	variable_pos* st;
@@ -151,7 +158,7 @@ if((*cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 		}
 	//	printf("end of list \n");
 	}
-clause_count--;
+Coms->clause_count--;
 
 }
 /*void pop_clause(variable_pos* *cursor){
@@ -203,7 +210,7 @@ clause_count--;
 
 }
 */
-void RemoveFVariablePosition(variable_pos* cursor, int var){
+void RemoveFVariablePosition(variable_pos* cursor, int var, com_line* Coms){
 
 if((cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 	variable_pos* tmp=(cursor);
@@ -222,8 +229,7 @@ if((cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 			(cursor)->next->previous=	(cursor)->previous;
 			
 		}
-	}
-	else{
+	}else{
 		//if there's not a previous address
 		if(cursor->next!=NULL){
 			printf("prev\n");
@@ -243,65 +249,57 @@ if((cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 			cursor->first->end=cursor;
 		}else{
 			cursor->clause=0;
-			variable_count--;
+			Coms->variable_count--;
 		}
 	}
 }
 
-void RemoveVariablePosition(variable_pos* cursor, int var){
+void RemoveConnection(variable_pos* cursor, int clause, variable_pos** Base){
 
 if((cursor)==NULL){printf(" null pass ptr\n");exit(0);}
 	variable_pos* tmp=(cursor);
 	variable_pos* st;
 
 	if((cursor)->previous!=NULL){
-	//	printf("previous con %i\n",(*cursor)->clause);
 		
 		if((cursor)->next==NULL){
-			
-			
 			
 			(cursor)->previous->next=NULL;
 			(cursor)->first->end=(cursor)->previous;
 			free(cursor);
-			
-			
-			//mp=(*cursor)->next;
-			//(*cursor)->next=NULL;
-			//free(tmp);	
-			
 
 		}else{
 			(cursor)->previous->next=	(cursor)->next;
 			(cursor)->next->previous=	(cursor)->previous;
+			free(cursor);
 			
 		}
-
-	}
-	else{
+	}else{
 		//if there's not a previous address
 		if(cursor->next!=NULL){
-			printf("prev\n");
-			variable_position[var]=variable_position[var]->next;
-			//free(variable_position[var]->previous);
-			variable_position[var]->previous=NULL;
-			cursor = variable_position[var] ;
+			
+			Base[clause]=Base[clause]->next;
+			
+			free(Base[clause]->previous);
+
+			Base[clause]->previous=NULL;
+
+			cursor = Base[clause] ;
+			
 			while( 1 ){
-				cursor->first=variable_position[var];
-				if(cursor->next!=NULL){
-					cursor=cursor->next;
-				}else{
-					break;
-				}
+
+				cursor->first=Base[clause];
+				if(cursor->next==NULL) break;
+				cursor=cursor->next;
 		
 			}
 			cursor->first->end=cursor;
 		}else{
 			cursor->clause=0;
-			variable_count--;
 		}
 	}
 }
+
 
 
 variable_pos* search_var_pos(int clause,variable_pos* head){
@@ -376,7 +374,7 @@ void Assert_Variable(int variable){
 
 }
 
-void debug_pos(variable_pos *head){
+void debug_pos(variable_pos *head, com_line* Coms){
 
 if(!head){
 printf("debug pos NULL VALUE\n");
@@ -386,7 +384,7 @@ exit(0);
 char input;
 while (1){
 
-printf("\n clause %i, old %i size[i] %i \n ", head->clause,new_old_clause[head->clause],clause_size[head->clause]);
+printf("\n clause %i, old %i size[i] %i \n ", head->clause,new_old_clause[head->clause],Coms->clause_size[head->clause]);
 scanf("%c", &input);
 if(getchar()!=0){
 //printf("boop");

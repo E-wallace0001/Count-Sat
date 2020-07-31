@@ -4,15 +4,17 @@
 #include <stdbool.h>
 #include "llist.h"
 #include "stest.h"
+#include "index.h"
 #include "var_pos.h"
 #include "map.h"
-#include "index.h"
+#include "m_map.h"
+#include "coms.h"
 
-link_node* link_create(int data, link_node* previous, link_node* next){
-	link_node* new_node = (link_node*)malloc(sizeof(link_node));
+link_node* link_create(int data, link_node* previous, link_node* next,com_line* Coms){
+	//link_node* new_node = malloc(sizeof(*new_node));
+	link_node* new_node	= alloc_mem(Coms->link_pool);
 	if(new_node==NULL){
 		printf("error creating a new node. \n");
-		
 	}
 
 	new_node->first=new_node;
@@ -23,8 +25,8 @@ link_node* link_create(int data, link_node* previous, link_node* next){
 	return new_node;
 }
 
-link_node* link_append(int data,link_node* head){
-	link_node* new_node=link_create(data, head,NULL);
+link_node* link_append(int data,link_node* head,com_line* Coms){
+	link_node* new_node=link_create(data, head,NULL, Coms);
 
 	if(head!=NULL ){
 	
@@ -32,15 +34,10 @@ link_node* link_append(int data,link_node* head){
 		
 		new_node->first=head->first;
 		new_node->first->end=new_node;
-		new_node->next=NULL;
 		new_node->previous=head;
 		head->next=new_node;
-	}
-	else{
-		new_node->next=NULL;
-		new_node->previous=NULL;
+	}else{
 		new_node->first=new_node;
-		new_node->data=data;
 		new_node->end=new_node;
 	}
 
@@ -48,36 +45,37 @@ return(new_node) ;
 }
 
 
-link_node* copy_list(link_node* list){
+link_node* copy_list(link_node* list,com_line* Coms){
 
 	link_node* new_list=NULL;
 
-	if(list==NULL){ printf("null list copy \n"); exit(0);}
+//	if(list==NULL){ printf("null list copy \n"); exit(0);}
 
 	list=list->first;
-
-	while(1){
+	//new_list->end=new_list;
+	//new_list->first=new_list;
+	while(list!=NULL){
 		if(list->data!=0){
-			new_list=link_append(list->data, new_list);
+			new_list=link_append(list->data, new_list,Coms);
 		}
 		if(list->next==NULL) break;
 		list=list->next;
 	}
-
+	//new_list->first->end=new_list;
 	return new_list;
 
 }
 
 // add a new node to the list
-static inline link_node* link_prepend(link_node* head,int data){
+static inline link_node* link_prepend(link_node* head,int data,com_line* Coms){
 	
-	link_node* new_node=link_create(data,head,NULL);
+	link_node* new_node=link_create(data,head,NULL, Coms);
 	//if(new_node->first==NULL){new_node->first = new_node;}else{new_node->first=head;}
 
 	return new_node;
 }
 
-void pop_link(link_node** cursor){
+void pop_link(link_node** cursor,com_line* Coms){
 
 if((*cursor)==NULL){printf(" null ptr- link_pop\n"); exit(0);}
 
@@ -87,7 +85,7 @@ if((*cursor)->previous!=NULL){
 	(*cursor)=(*cursor)->previous;
 	(*cursor)->first->end=(*cursor);
 	(*cursor)->next=NULL;
-	free(temp);
+	release_mem((*cursor), Coms->link_pool);
 }else{
 	if((*cursor)->next!=NULL){
 		printf("not end\n");
@@ -95,7 +93,7 @@ if((*cursor)->previous!=NULL){
 		temp=(*cursor)->next;
 		temp->previous=NULL;
 	}else{
-		free(*cursor);
+		release_mem((*cursor), Coms->link_pool);
 		(*cursor)=NULL;
 	}
 	
@@ -105,7 +103,7 @@ if((*cursor)->previous!=NULL){
 
 
 
-int RemoveMember(link_node** cursor){
+int RemoveMember(link_node** cursor, com_line* Coms){
 	int ret=0;
 if((*cursor)==NULL){printf(" null ptr- link_pop\n"); exit(0);}
 
@@ -152,8 +150,8 @@ if((*cursor)->previous!=NULL){
 			(*cursor)=(*cursor)->next;
 		}
 		temp->next->end=(*cursor);
-		free(temp);
-
+		//free(temp);
+		release_mem(temp, Coms->link_pool);
 	}else{
 		(*cursor)->data=0;
 		(*cursor)->next=NULL;
@@ -167,7 +165,7 @@ if((*cursor)->previous!=NULL){
 }
 return(0);
 }
-int TestRemoveMember(link_node** cursor){
+int TestRemoveMember(link_node** cursor, com_line* Coms){
 	int ret=0;
 if((*cursor)==NULL){printf(" null ptr- link_pop\n"); exit(0);}
 
@@ -185,7 +183,8 @@ if((*cursor)->previous!=NULL){
 		next->previous=previous;
 		previous->next=next;
 		
-		free(temp);
+		//free(temp);
+		release_mem(temp, Coms->link_pool);
 	}else{
 		temp=(*cursor);
 		(*cursor)=(*cursor)->previous;
@@ -193,8 +192,8 @@ if((*cursor)->previous!=NULL){
 		(*cursor)->first->end=(*cursor);
 		(*cursor)->next=NULL;
 		
-		free(temp);
-		
+		//free(temp);
+		release_mem(temp, Coms->link_pool);
 		return (-1);
 	}
 	
@@ -214,14 +213,16 @@ if((*cursor)->previous!=NULL){
 			(*cursor)=(*cursor)->next;
 		}
 		temp->next->end=(*cursor);
-		free(temp);
+		//free(temp);
+		release_mem(temp, Coms->link_pool);
 
 	}else{
 		//(*cursor)->data=0;
 		(*cursor)->next=NULL;
 		(*cursor)->previous=NULL;
 		//(*cursor)=NULL;
-		free(*cursor);
+		//free(*cursor);
+		release_mem(*cursor, Coms->link_pool);
 		return (-1);
 	}
 
@@ -230,7 +231,7 @@ if((*cursor)->previous!=NULL){
 return(0);
 }
 
-int RemoveFromList(link_node** cursor){
+int RemoveFromList(link_node** cursor, com_line* Coms){
 	int ret=0;
 	if((*cursor)==NULL){return -1;}
 
@@ -277,13 +278,15 @@ int RemoveFromList(link_node** cursor){
 				(*cursor)=(*cursor)->next;
 			}
 			temp->next->end=(*cursor);
-			free(temp);
+			//free(temp);
+			release_mem(temp, Coms->link_pool);
 
 		}else{
 			(*cursor)->next=NULL;
 			(*cursor)->previous=NULL;
 			//(*cursor)=NULL;
-			free(*cursor);
+			//free(*cursor);
+			release_mem(*cursor, Coms->link_pool);
 			return (-1);
 		}
 
@@ -334,31 +337,30 @@ int FindLargestClause( link_node* Node){
 
 }
 
-link_node* BinSort(link_node** Node){
+link_node* BinSort(link_node** Node,com_line* Coms){
 
 	if( (*Node) == NULL) exit(0);
 	(*Node)=(*Node)->first;
-	
-	int size= FindLargestClause((*Node));
+	int size= FindLargestClause(*Node);
 	
 	variable_pos** SearchIndex=CreateIndex(size);
 	
-	(*Node)=(*Node)->first;
 	
 	//halt();
 	link_node* tmp=NULL;
 	
-	while((*Node)!=NULL){
-		
-		SetIndex((*Node)->data,f_clause_size[(*Node)->data],SearchIndex);
+	while(1){
+		//	printf("%li  size %i adr %p \n",(*Node)->data, Coms->f_clause_size[(*Node)->data], &(Coms->f_clause_size[(*Node)->data]) );
+			SetIndex((*Node)->data,f_clause_size[(*Node)->data],SearchIndex);
 		
 		if((*Node)->next==NULL) {break;}
 		
 		tmp=(*Node);
 		(*Node)=(*Node)->next;
-		free(tmp);
+		//free(tmp);
+		release_mem(tmp, Coms->link_pool);
 	}
-	free(*Node);
+	//free(*Node);
 	*Node = NULL;
 	
 	for(int i=1;i<=size;i++){
@@ -370,7 +372,7 @@ link_node* BinSort(link_node** Node){
 			
 		while(1){
 			if(iter->clause!=0){
-				(*Node) = link_append( iter->clause, 	(*Node) );
+				(*Node) = link_append( iter->clause, 	(*Node) , Coms);
 			}
 			if(iter->next==NULL) break;
 			iter	 = iter->next;
@@ -383,7 +385,7 @@ link_node* BinSort(link_node** Node){
 	return (*Node);
 }
 
-link_node* GroupSingles( link_node* set ){
+link_node* GroupSingles( link_node* set ,com_line* Coms){
 
 	link_node* tried = NULL; 
 
@@ -406,7 +408,7 @@ link_node* GroupSingles( link_node* set ){
 			
 			//printf(" this single %i \n", f_variable_connections[ iter->data ][ 1 ]);
 			
-			tried = link_append( abs(f_variable_connections[ iter->data ][ 1 ]), tried);
+			tried = link_append( abs(f_variable_connections[ iter->data ][ 1 ]), tried,Coms);
 			
 			temp = iter->first;
 			
@@ -425,7 +427,7 @@ link_node* GroupSingles( link_node* set ){
 					// Swap places
 						saved=iter->next;
 						MoveToPre(iter, temp);
-						SetFirst(temp);
+						//SetFirst(temp);
 						//printf(" single \n");
 					
 					break;
@@ -449,7 +451,7 @@ link_node* GroupSingles( link_node* set ){
 		iter=iter->next;
 	}
 
-DestroySet( tried );
+DestroySet( tried ,Coms);
 	return set;
 }
 
@@ -480,7 +482,7 @@ link_node* MoveToPre( link_node* source, link_node* drain){
 			temp=source->next;
 			temp->first=temp;
 			//source=source->next;
-			SetFirst(source->next);
+			//SetFirst(source->next);
 		}
 	}
 	source->next=NULL;
@@ -550,7 +552,7 @@ if(set==NULL) return set;
 	
 				saved=set->next;
 				set=MoveToPre( set, SavedFound);
-				SetFirst(set);
+				//SetFirst(set);
 			
 			found=0;
 		}
@@ -566,7 +568,7 @@ if(set==NULL) return set;
 
 
 
-link_node* GroupSet( link_node* Node ){
+link_node* GroupSet( link_node* Node, com_line* Coms ){
 
 
 	Node							= Node->first;
@@ -599,11 +601,11 @@ link_node* GroupSet( link_node* Node ){
 
 		int Variable = 1;
 		
-		link_node** GroupSet	= CreateSet( f_clause_size[Group->data] );
+		link_node** GroupSet	= CreateSet( Coms->f_clause_size[Group->data] );
 		
 
 		//ThisFunction searches all nodes before and collects those clauses
-		CollectVariables(Group, GroupSet, &list);
+		CollectVariables(Group, GroupSet, &list,Coms);
 			
 			int count=0;
 			int var =0 ;
@@ -611,7 +613,7 @@ link_node* GroupSet( link_node* Node ){
 			// select the variable with the most connections in total
 			while(1){
 
-				for( int v = f_clause_size[Group->data]; v!=0; v--){
+				for( int v = Coms->f_clause_size[Group->data]; v!=0; v--){
 					if( ExistInSet( v, appended ) == 1 ) continue;
 					
 					if( ListSize(GroupSet[v]) <= count && count!=0 || count ==0){
@@ -624,7 +626,7 @@ link_node* GroupSet( link_node* Node ){
 					break;
 				}
 				
-				appended = link_append( var, appended);
+				appended = link_append( var, appended,Coms);
 				
 				count=0;
 
@@ -637,22 +639,23 @@ link_node* GroupSet( link_node* Node ){
 				
 				//printf(" %i :", var);
 				
-				copy=copy_list(GroupSet[var]);
+				copy=copy_list(GroupSet[var],Coms);
+				
 				if(copy==NULL)continue;
 				
 				if( copy->data==0){
-					DestroySet(copy);
+					DestroySet(copy,Coms);
 					continue;
 				}
 				
 				OrderedList=JoinSet( copy, OrderedList );
-				RemoveDuplicateMembers( &OrderedList);
+				RemoveDuplicateMembers( &OrderedList,Coms);
 				copy=NULL;
 				//printf("1 list size %i %i \n", ListSize(OrderedList),ListSize(Group));
 				var=0;
 			}
 			
-			FreeSet(GroupSet,f_clause_size[Group->data]);
+			FreeSet(GroupSet,Coms->f_clause_size[Group->data],Coms);
 			GroupSet=NULL;
 			
 		//	SetFirst(OrderedList);
@@ -665,9 +668,9 @@ link_node* GroupSet( link_node* Node ){
 				continue;
 			}
 			
-			BinSort( &OrderedList );
+			BinSort( &OrderedList, Coms);
 			
-			RemoveAfromB(OrderedList, &Group);
+			RemoveAfromB(OrderedList, &	Group, Coms);
 				
 			if(saved->previous==NULL){
 			
@@ -675,7 +678,7 @@ link_node* GroupSet( link_node* Node ){
 
 				saved->first->previous->next=saved;
 				
-				//OrderedList->first->previous= NULL;
+				OrderedList->first->previous= NULL;
 				
 			
 			}else{
@@ -684,6 +687,7 @@ link_node* GroupSet( link_node* Node ){
 				OrderedList->first->previous=saved->previous;
 				saved->previous=OrderedList->first->end;
 				OrderedList->first->end->next=saved;
+				saved->first= OrderedList->first;
 					
 			}
 			SetFirst(saved);
@@ -698,10 +702,10 @@ link_node* GroupSet( link_node* Node ){
 		Group=saved;;
 	}
 	
-	DestroySet(appended);
+	DestroySet(appended,Coms);
 	appended=NULL;
-	DestroySet(list);
-		CheckFirstNode(OrderedList);
+	DestroySet(list,Coms);
+	CheckFirstNode(OrderedList);
 	return saved;
 }
 
@@ -720,7 +724,7 @@ link_node* FindNode(int data, link_node** Node ){
 }
 
 //For this node, search all nodes before for those that contain this variable
-link_node* CollectVariables( link_node* Group, link_node* GroupSet[], link_node** list){
+link_node* CollectVariables( link_node* Group, link_node* GroupSet[], link_node** list, com_line* Coms){
 	link_node* Compare= NULL;
 
 	for( int Variable=f_clause_size[Group->data]; Variable!=0; Variable-- ){
@@ -730,7 +734,7 @@ link_node* CollectVariables( link_node* Group, link_node* GroupSet[], link_node*
 			continue;
 		}
 			
-		*list = link_append(abs(f_variable_connections[ Group->data ] [ Variable]),(*list));
+		*list = link_append(abs(f_variable_connections[ Group->data ] [ Variable]),(*list),Coms);
 
 		// for all previous, connect to the this point
 		Compare=Group->previous;
@@ -745,7 +749,7 @@ link_node* CollectVariables( link_node* Group, link_node* GroupSet[], link_node*
 					if( GroupSet[Variable]->data == 0){
 						GroupSet[Variable]->data = Compare->data;
 					}else{
-						link_append( Compare->data, GroupSet[Variable] );
+						link_append( Compare->data, GroupSet[Variable], Coms);
 					}
 							
 				}
@@ -760,7 +764,7 @@ link_node* CollectVariables( link_node* Group, link_node* GroupSet[], link_node*
 	}
 }
 
-link_node* RemoveAfromB(link_node* SetA, link_node** SetB){
+link_node* RemoveAfromB(link_node* SetA, link_node** SetB,com_line* Coms){
 
 	if(SetA==NULL){
 		if(*SetB==NULL){
@@ -780,7 +784,7 @@ link_node* RemoveAfromB(link_node* SetA, link_node** SetB){
 			
 			 FindNode(SetA->data, SetB);
 			 
-			 TestRemoveMember(SetB);
+			 TestRemoveMember(SetB, Coms);
 		}
 
 		if(SetA->next==NULL) break;
@@ -793,14 +797,14 @@ return *SetB;
 }
 
 // If this exists in that, remove this.
-link_node* RemoveSubset(link_node**  Remove, link_node* set, link_node** table, int var){
+link_node* RemoveSubset(link_node**  Remove, link_node* set, link_node** table, int var,com_line* Coms){
 if(set==NULL) return NULL;;
 set=set->first;
 	while(1){
 
 		if(ExistInSet( set->data, *Remove)==1){
 			
-			RemoveInSet( set->data, *Remove,table,var);
+			RemoveInSet( set->data, *Remove,table,var,Coms);
 		}
 
 		if(set->next==NULL) break;
@@ -812,7 +816,7 @@ set=set->first;
 
 }
 
-link_node* GroupTogether( link_node* Node ){
+link_node* GroupTogether( link_node* Node,com_line* Coms){
 	Node=Node->first;
 
 	link_node* temp		= NULL;
@@ -847,7 +851,7 @@ link_node* GroupTogether( link_node* Node ){
 			found = NULL;
 
 			if( ExistInSet( abs(f_variable_connections[ Group->data ] [ Variable]),list ) ==1) {continue;}
-			list = link_append(abs(f_variable_connections[ Group->data ] [ Variable]),list);
+			list = link_append(abs(f_variable_connections[ Group->data ] [ Variable]),list, Coms);
 
 			// for all previous, connect to the this point	
 				Compare=Group->previous;
@@ -926,25 +930,26 @@ link_node* GroupTogether( link_node* Node ){
 	
 		Group=Group->previous;
 	}
-	DestroySet(list);
+	DestroySet(list,Coms);
 	return Group;
 }
 
 
 
-void DeleteList(link_node** cursor){
+void DeleteList(link_node** cursor,com_line* Coms){
+	if(cursor==NULL) return;
 	(*cursor)=(*cursor)->first->end;
 	while((*cursor)!=NULL){
 		if((*cursor)->previous!=NULL){ break;}
 		(*cursor)=(*cursor)->previous;
-		free((*cursor)->next);
-	
+		//free((*cursor)->next);
+		//release_mem(*cursor, Coms->link_pool);
 	}
-	free((*cursor));
-
+	//free((*cursor));
+	release_mem(*cursor, Coms->link_pool);
 }
 
-link_node* DeleteNode(link_node* cursor){
+link_node* DeleteNode(link_node* cursor, com_line* Coms){
 	int ret=0;
 if((cursor)==NULL){printf(" null ptr- link_pop\n"); exit(0);}
 
@@ -959,7 +964,7 @@ if((cursor)->previous!=NULL){
 		cursor->next->previous = (cursor)->previous;
 		cursor->previous->next = (cursor)->next;
 		
-		free(cursor);
+		release_mem(cursor, Coms->link_pool);
 		return(temp);
 	}else{
 		temp=(cursor)->previous;
@@ -967,7 +972,7 @@ if((cursor)->previous!=NULL){
 		
 		(cursor)->first->end=temp;
 		
-		free(cursor);
+		release_mem(cursor, Coms->link_pool);
 		
 		return (temp);
 	}
@@ -987,7 +992,7 @@ if((cursor)->previous!=NULL){
 			(temp)=(temp)->next;
 		}
 		temp->first->end=(temp);
-		free(cursor);
+		release_mem(cursor, Coms->link_pool);
 		return (temp);
 
 	}else{
@@ -1002,7 +1007,7 @@ if((cursor)->previous!=NULL){
 	}
 }
 
-link_node* AddLists(link_node* OpA, link_node* OpB){
+link_node* AddLists(link_node* OpA, link_node* OpB,com_line* Coms){
 
 	if( OpA==NULL || OpB==NULL ){ printf(" no valid table\n"); exit(0); }
 
@@ -1012,11 +1017,11 @@ link_node* AddLists(link_node* OpA, link_node* OpB){
 	OpB = OpB->first;
 
 	while(OpA!=NULL){
-		list=link_append(OpA->data,list);
+		list=link_append(OpA->data,list, Coms);
 		OpA=OpA->next;
 	}
 	while(OpB!=NULL){
-		list=link_append(OpB->data,list);
+		list=link_append(OpB->data,list, Coms);
 		OpB=OpB->next;
 	}
 	
@@ -1025,7 +1030,7 @@ link_node* AddLists(link_node* OpA, link_node* OpB){
 }
 
 
-void link_dispose(link_node *head)
+void link_dispose(link_node *head, com_line* Coms)
 {
 	link_node *cursor, *tmp;
 
@@ -1034,7 +1039,7 @@ void link_dispose(link_node *head)
 		
 		while(cursor!=NULL){
 			tmp=cursor->next;
-			free(cursor);
+			release_mem(cursor, Coms->link_pool);
 			cursor=tmp;
 		
 	}

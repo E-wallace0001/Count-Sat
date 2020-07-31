@@ -5,29 +5,29 @@ int add_clause_();
 
 void del_clause_();
 
-variable_pos* copy_clause( int, variable_pos*, int [] );
+struct variable_pos* copy_clause( int, int [] , com_line*);
 
 void create_new_clause();
 
 
-variable_pos* AddToClause( int , variable_pos* );
+struct variable_pos* AddToClause( int , struct variable_pos*, com_line* );
 
-void append_var_clause( int, int, variable_pos*[] );
+void append_var_clause( int, int,  com_line* );
 
-void del_clause(int);
+void del_clause(int, com_line*);
 
-void pop_var_clause(int, int);
+void pop_var_clause(int, int, com_line*);
 void remove_copy_clause(int);
 void pop_clause_();
-void copy_removed(int, variable_pos**);
+void copy_removed(int, com_line*);
 
-void RemoveFromClause(int, variable_pos**);
+void RemoveFromClause(int, com_line*);
 void copy_pop_var_clause(int,int);
-void null_add(variable_pos** );
-void null_remove(variable_pos** );
+void null_add(com_line*);
+void null_remove(com_line* );
 
 void fpop_clause(int , int this_place);
-void RemoveClause(int ,variable_pos** );
+void RemoveClause(int , com_line* );
 
 void RemoveLastAssert();
 

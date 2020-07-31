@@ -4,8 +4,8 @@
 #include <math.h>
 #include <stdbool.h>
 #include "stest.h"
-
 #include "var_pos.h"
+
 	//stores temporary literals
 
 void read_cnf(char* argv){
@@ -28,7 +28,7 @@ void read_cnf(char* argv){
 	int cl=1;
 	//scans file
 	int literal;
-f_variable_connections[0][0]=0;
+	f_variable_connections[0][0]=0;
 	int clause;
 
 	while (1){
