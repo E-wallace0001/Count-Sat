@@ -68,7 +68,7 @@ link_node* GroupSingles( link_node* , com_line*);
 
 link_node* GroupSet( link_node* ,com_line*);
 
-link_node** CreateSet(int );
+
 
 link_node* CollectVariables( link_node* , link_node** , link_node**,com_line*);
 

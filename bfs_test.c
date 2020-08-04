@@ -63,7 +63,7 @@ void Export(variable_pos* iter, char title[], com_line* Coms){
 	iter=iter->first;
 	FILE* fp2;
 	fp2=fopen(title,"w");
-	fprintf(fp2, "p cnf 1 %i\n", f_clause_count);
+	fprintf(fp2, "p cnf 1 %i\n", Coms->clause_count);
 	while(1){
 		if( clause_size[(iter)->clause]!=0){
 		for(int variable=clause_size[(iter)->clause]; variable!=0;variable--){
@@ -114,25 +114,22 @@ void SearchAndCollect(void* arg_a){
 if( arg_a ==NULL) exit(0);
 
 	com_line* arg_p =  arg_a;
+	com_line* data;
 	
 //	printf("ding %i \n", arg_p->limit);
 	int TriedSaved=0;
 
-	link_node*	TempList = NULL;
-	
-	link_node* Tried= (arg_p->Tried);
-	//debug_list( arg_p->SetList);
-	int ListEnd = arg_p->SetList->first->end->data;
+	link_node* TempList	= NULL;
+	link_node* Tried		= (arg_p->Tried);
+	int ListEnd 			= arg_p->SetList->first->end->data;
 
 	if((Tried)!=NULL && (Tried)->first->end!=NULL){
-		TriedSaved=(Tried)->first->end->data;
+		TriedSaved = (Tried)->first->end->data;
 	}
 	
-	
-	link_node* SetList=arg_p->SetList;
-	
-	int eval =0;
-	link_node* new_list =NULL;
+	link_node* SetList	= arg_p->SetList;
+	int eval 				= 0;
+	link_node* new_list	= NULL;
 	
 	if(arg_p->list==NULL) return ;
 	link_node* LocalTried=NULL;
@@ -147,7 +144,7 @@ if( arg_a ==NULL) exit(0);
 			
 			//LocalTried = link_append( abs(f_variable_connections[arg_p->list->data][clause]) , LocalTried,arg_p);
 			
-			(Tried) = link_append( abs(f_variable_connections[arg_p->list->data][clause]) , (Tried),arg_p);
+			Tried = link_append( abs(f_variable_connections[arg_p->list->data][clause]) , (Tried),arg_p);
 
 			// copy all of the places of variable
 			SetList  = CopySet( abs(f_variable_connections[arg_p->list->data][clause]) ,f_variable_position, SetList,arg_p);
@@ -158,72 +155,68 @@ if( arg_a ==NULL) exit(0);
 			//SetFirst(new_list);
 			RemoveDuplicateMembers( &SetList, arg_p );
 			RemoveDuplicateMembers( &new_list, arg_p );
-			
-			if( arg_p->limit==3){
-				//exit(0);
-	// 		return;
-	 		}
+
 	 		
 			if( arg_p->limit == arg_p->LimitReached ){
 //			 printf(" data %p \n", arg_p);
 //printf("ones[0] after subsetsize %i  \n",ListSize(arg_p->SetList));
 			
-			//link_node* t = arg_p->SetList;
-				//eval = 0;
-	// int t =0;
-	
 				//com_line* arg_t;
 				
-				com_line* arg_t =  alloc_mem(arg_p->com_pool);
+				com_line* data =  alloc_mem(arg_p->com_pool);
 				//
 				//arg_t							= malloc(sizeof(*arg_t));
-				arg_t->list				= copy_list(arg_p->SetList,arg_p);
-				arg_t->SetList			= copy_list(arg_p->SetList,arg_p);
-				arg_t->node_pool		= arg_p->node_pool;
-	
-				//DeleteList(&Tried, arg_p);
-				//DeleteList(&new_list, arg_p);
+				data->list				= copy_list(new_list,arg_p);
+				data->SetList			= copy_list(arg_p->SetList,arg_p);
 				
 				//release_mem(arg_t,arg_p->com_pool);
-		
-		//free( arg_t->set);
-		//free(arg_t->clause_node);
-		//DestroySet(arg_t->SetList);
-		//free(arg_t);
+				data->set= NULL;
 				// this is where the job for the multi threaded workload is to go
-					arg_t->ClauseCount		= arg_p->ClauseCount;
-					arg_t->VariableCount	= arg_p->VariableCount;
-					arg_t->clause_size	= arg_p->clause_size;
-					arg_t->set_var			= arg_p->set_var;
-					arg_t->link_pool		= arg_p->link_pool;
-					arg_t->node_pool		= arg_p->node_pool;
-					arg_t->com_pool		= arg_p->com_pool;
-					arg_t->job_mem			= arg_p->job_mem;
-					arg_t->set_variable		= arg_p->set_variable;
-					arg_t->variable_position = arg_p->variable_position;
-				
-				Evaluate( arg_p);
-				DestroySet(arg_t->SetList, arg_p);
-				DestroySet(arg_t->list, arg_p);
+				data->ClauseCount				= arg_p->ClauseCount;
+				data->VariableCount			= arg_p->VariableCount;
+				data->clause_size				= arg_p->clause_size;
+				data->set_var					= arg_p->set_var;
+				data->link_pool				= arg_p->link_pool;
+				data->node_pool				= arg_p->node_pool;
+				data->com_pool					= arg_p->com_pool;
+				data->job_mem					= arg_p->job_mem;
+				data->set_variable			= arg_p->set_variable;
+				data->variable_position		= arg_p->variable_position;
+				data->var_tab					= arg_p->var_tab;
+				data->clause_connections	= arg_p->clause_connections;
+				data->ret_value				= 0;
+
+				Evaluate( data);
 				//ListAddWork(WorkerBees,Evaluate,arg_t);
-				//work_count++;
-				//arg_t-> SetList			= malloc(sizeof(variable_pos));
-				//free(copyset 	)	;
-				//free(arg_t-> SetList 		)	;
-				//work_count++;
-				//free(arg_t)							;
-				//free( copyset);
-				// this is where the job for the multi threaded workload is to go
 				
-		//DeleteSet(&arg_p->list, arg_p);
-		//DestroySet(arg_p->Tried, arg_p);
-		//DeleteSet(&arg_p->SetList, arg_p);
-		//release_mem(arg_p, arg_p->com_pool);
+		//DeleteSet(&arg_t->list, arg_p);
+		//DeleteSet(&arg_t->SetList, arg_p);
+		//printf(" data->SEt %li \n", data->SetList->previous->data);
+		DeleteSet(&data->SetList, arg_p);
+		DeleteSet(&data->list   , arg_p);
+		//free(arg_t->set);
+		if(data->ret_value==-1){
+			
+			arg_p->ret_value=-1;
+			RemoveUntil( ListEnd, &SetList,arg_p);
+		//	DeleteSet( &SetList, arg_p);
+			DeleteSet( &new_list, arg_p);
+			//SetList=NULL;
+			new_list=NULL;
+			release_mem(data, arg_p->com_pool);
+			
+			return;
+		
+		}
+		
+		
+		release_mem(data, arg_p->com_pool);
+		//exit(0);
 			//	return;
 				
 			}else{
 				eval = 0;
-				//if(new_list!=NULL  ) {
+				if(new_list!=NULL  ) {
 
 				//arg_p->limit++;
 					//if(new_list==NULL) break;
@@ -231,52 +224,101 @@ if( arg_a ==NULL) exit(0);
 					link_node* temp = copy_list(Tried,arg_p);
 					//com_line* data = malloc(sizeof(*data));
 					com_line* data = alloc_mem( arg_p->com_pool );
-					
-					data->list				= copy_list(SetList,arg_p);
-					data->SetList			= copy_list(arg_p->SetList,arg_p);
-					data->Tried				= temp;
-					data->limit 			= arg_p->limit+1;
-					data->LimitReached	= arg_p->LimitReached;
-					data->ClauseCount		= arg_p->ClauseCount;
-					data->VariableCount	= arg_p->VariableCount;
-					data->clause_size		= arg_p->clause_size;
-					data->set_variable		= arg_p->set_variable;
-					data->set_var			= arg_p->set_var;
-					data->link_pool		= arg_p->link_pool;
-					data->node_pool		= arg_p->node_pool;
-					data->com_pool			= arg_p->com_pool;
-					data->job_mem			= arg_p->job_mem;
-					data->variable_position = arg_p->variable_position;
-					data->clause_connections = arg_p->clause_connections;
-				//	printf("%li \n",data->SetList->first->data);
-				//	printf(" lim %i %i \n",arg_p->limit, data->limit);
-					
+					data->set= NULL;
+					data->list						= new_list;
+					data->SetList					= SetList;;
+					data->Tried						= temp;
+					data->limit 					= arg_p->limit+1;
+					data->LimitReached			= arg_p->LimitReached;
+					data->ClauseCount				= arg_p->ClauseCount;
+					data->VariableCount			= arg_p->VariableCount;
+					data->clause_size				= arg_p->clause_size;
+					data->set_variable			= arg_p->set_variable;
+					data->set_var					= arg_p->set_var;
+					data->link_pool				= arg_p->link_pool;
+					data->node_pool				= arg_p->node_pool;
+					data->com_pool					= arg_p->com_pool;
+					data->job_mem					= arg_p->job_mem;
+					data->variable_position 	= arg_p->variable_position;
+					data->clause_connections	= arg_p->clause_connections;
+					data->var_tab					= arg_p->var_tab;
+					data->ret_value				= 0;
 					//ListAddWork(WorkerBees,SearchAndCollect,data);
 					//usleep(5);
 					pid_t pid;
 					//pid = fork();
-	SearchAndCollect(data);
+	
+					SearchAndCollect(data);
+					
 					if(pid==-1){
 						printf("error craing fork \n");
 						exit(0);
 					}
 					if( pid==0){
 						// printf(" data %p \n", data);
-					//	SearchAndCollect(data);
-					//	exit(0);
+						SearchAndCollect(data);
+						exit(0);
 					}
+					
+					DeleteSet(&temp, arg_p);
+					
+					if( data->ret_value==-1){
+						arg_p->ret_value=-1;
+						release_mem(data, arg_p->com_pool);
+						return;
+					}
+					//free(arg_t->set);
+					release_mem(data, arg_p->com_pool);
+					//release_mem(data, arg_p->com_pool);
 					//arg_p->limit--;
-				//}
-				//else{
+				}else{
 				
-					//eval = Evaluate( SetList , ClauseCount, VariableCount);
+				com_line* data =  alloc_mem(arg_p->com_pool);
+				//
+				//arg_t							= malloc(sizeof(*arg_t));
+				data->list				= copy_list(new_list,arg_p);
+				data->SetList			= copy_list(arg_p->SetList,arg_p);
 				
-				//}
+				// this is where the job for the multi threaded workload is to go
+					data->ClauseCount				= arg_p->ClauseCount;
+					data->VariableCount			= arg_p->VariableCount;
+					data->clause_size				= arg_p->clause_size;
+					data->set_var					= arg_p->set_var;
+					data->link_pool				= arg_p->link_pool;
+					data->node_pool				= arg_p->node_pool;
+					data->com_pool					= arg_p->com_pool;
+					data->job_mem					= arg_p->job_mem;
+					data->set_variable			= arg_p->set_variable;
+					data->variable_position		= arg_p->variable_position;
+					data->var_tab					= arg_p->var_tab;
+					data->clause_connections	= arg_p->clause_connections;
+				data->ret_value				= 0;
+				Evaluate( data);
+
+				DeleteSet(&data->SetList, arg_p);
+				DeleteSet(&data->list, arg_p);
+				
+				if(data->ret_value==-1){
+					
+					arg_p->ret_value=-1;
+					release_mem(data, arg_p->com_pool);
+					RemoveUntil( ListEnd, &SetList,arg_p);
+					//DeleteSet( &SetList, arg_p);
+					DeleteSet( &new_list, arg_p);
+					//SetList=NULL;
+					//new_list=NULL;
+					
+					return;
+				
+				}
+				
+				release_mem(data, arg_p->com_pool);
+				}
 			}
 		
 			//RemoveUntil( TriedSaved, Tried);
 			
-			RemoveUntil( ListEnd, &arg_p->SetList,arg_p);
+			RemoveUntil( ListEnd, &SetList,arg_p);
 			
 			DeleteSet(&new_list,arg_p);
 			
@@ -301,13 +343,14 @@ if( arg_a ==NULL) exit(0);
 	RemoveUntil( TriedSaved, &Tried, arg_p);
 	
 	if(arg_p->limit==2){
-		//DeleteSet(&arg_p->list, arg_p);
-		//DestroySet(arg_p->Tried, arg_p);
-		//DestroySet(arg_p->SetList, arg_p);
+	
 		//release_mem(arg_p, arg_p->com_pool);
 	}else{
 		
 	}
+	//DestroySet(arg_p->list, arg_p);
+	//DestroySet(arg_p->Tried, arg_p);
+	//DestroySet(data->SetList, arg_p);
 
 	//DestroySet(arg_p->list, arg_p);
 	//free (arg_p);
@@ -317,7 +360,7 @@ if( arg_a ==NULL) exit(0);
 
 }
 
-void Evaluate(void *arg_v){
+void* Evaluate(void *arg_v){
 com_line* arg_t= arg_v;
 
 //usleep(10);
@@ -335,7 +378,7 @@ com_line* arg_t= arg_v;
 
 	int savedsize				 = 0;
 
-	//AddKnownVariables(subset,arg_t);
+	AddKnownVariables(subset,arg_t);
 	
 //	RemoveDuplicateMembers( &subset );
 		
@@ -344,36 +387,35 @@ com_line* arg_t= arg_v;
 
 	savedsize	= ListSize(subset->first);
 
+
 	// Sort set		
-	//BinSort( &subset, arg_t );
-	//SetFirst
-	//subset = GroupSet( subset , arg_t );
-//exit(0);
-	//GroupSingles(subset);
+	BinSort( &subset, arg_t );
+	subset= GroupSet( subset , arg_t );
+	subset = GroupSingles(subset,arg_t);
+	check=ListSize(subset->first);
 		
-	//CheckFirstNode(subset);
-	check=ListSize(subset);
 			if(savedsize!= check) {
 			printf("savesize != lsit  %i %i \n", savedsize,check);
 			exit(0);
 		}
 		
-		int* GroupDictionary = CreateArray( arg_t->ClauseArraySize );
+		int* GroupDictionary = CreateArray( arg_t->ClauseCount );
 	//	if(arg_t==NULL) exit(0);
 		
 		SetNewIndex( subset , &(arg_t->set), GroupDictionary ,Map, &Location, arg_t);
 //usleep(10);
 //gprintf(" indexed \n");
 
-
+//printf(" output \n");
 		null_add( arg_t );
-
-		solve(arg_t);
-		
 		//char out[20]= "tst";
 		//Export( (arg_t->set) , out,arg_t);
+		//halt();
+		solve(arg_t);
+		
+
 		//mpz_set_ui(saved, 1);
-		//mpz_set(saved, arg_t->clause_node->data);
+		mpz_set(saved, arg_t->clause_node->data);
 		
 		dispose(&arg_t->clause_node,arg_t);
 
@@ -389,18 +431,18 @@ com_line* arg_t= arg_v;
 		
 		DestroyArray(GroupDictionary,arg_t);
 		//if( mpz_cmp_ui(clause_node->data,0) == 0 ){	 //printf(" eval ==-1\n"); return -1; }
-		DestroySet(subset,arg_t);
+		//DestroySet(subset,arg_t);
 	
 		FreeMap( Map );
 		//FreeMap( MapLocation );
 		FreeMap( Location );
-		
-		mpz_clear( saved );
 		if( mpz_cmp_ui(saved,0) == 0 ){
-					
-					
-			
+				mpz_clear( saved );		
+				arg_t->ret_value=-1;
+				return NULL;
 		}
+		mpz_clear( saved );
+
 
 		
 
@@ -453,7 +495,7 @@ void init_graph(int ones[]){
 //char raw[20]="raw";
 //Export(set, raw);
 //exit(0);
-
+printf ("ones %i \n" , ones[0]);
 com_line* boss = memory_init();
 link_node* list=NULL;
 
@@ -498,9 +540,8 @@ bool redo=NULL;
 while(1){
 
 
-
 		TestVariable = FindUnset(&tested,boss);
-		printf(" to test %i \n", TestVariable);
+		
 		//if( TestVariable==246703) exit(0);
 	if(TestVariable==-1 ){
 		break;
@@ -510,10 +551,10 @@ while(1){
 		sub_con = CollectConnections(sub_con, boss);
 		sub_con = CollectConnections(sub_con, boss);
 		RemoveAfromB(sub_con, &tested, boss);
-		DestroySet(sub_con, boss);
+		DeleteSet(&sub_con, boss);
 		sub_con=NULL;
 	
-		printf(" to test %i \n", TestVariable);
+		//printf(" to test %i \n", TestVariable);
 		
 		if(TestVariable==-1) break;
 		
@@ -523,16 +564,19 @@ while(1){
 		
 		continue;
 	}
+	printf(" to test %i \n", TestVariable);
+	//halt();
 
 	link_node* SetList  = NULL;
 	link_node* Tried	  = NULL;
 	link_node* List	  = NULL;
 	
-	//Assert_Variable( -abs(TestVariable));
-		
+	Assert_Variable( -abs(TestVariable));
+	//	printf(" this is the stop %i  \n",ListSize ( SetList));	
 	SetList = CopySet( abs(TestVariable) ,f_variable_position, SetList, boss);
-	List    = CopySet( abs(TestVariable) ,f_variable_position, List, boss);
 
+	List    = CopySet( abs(TestVariable) ,f_variable_position, List, boss);
+	//printf(" this is the stop %i  \n",ListSize ( SetList));	
 	int VariableCount = 0;
 	
 	link_node* count  = NULL;
@@ -543,14 +587,14 @@ while(1){
 	VariableCount   	   += CountUniqueVariables(PartTotal,boss);
 
 	DeleteSet( &PartTotal,boss	 );
-	PartTotal = CollectConnections(total,boss);
+	PartTotal 				 = CollectConnections(total,boss);
 	VariableCount   	   += CountUniqueVariables(PartTotal,boss);
 
-	int ClauseCount   = VariableCount + ListSize( SetList );
+	int ClauseCount		 = VariableCount + ListSize( SetList );
 	
-	DeleteSet( &total,boss);
+	DeleteSet( &total,    boss);
 	DeleteSet( &PartTotal,boss);
-
+	
 
 	int eval						= 0;
 	int limit 					= 2;
@@ -560,59 +604,58 @@ while(1){
 	//link_node* try_copy = copy_list(Tried);
 	//data = malloc(sizeof(*data));
 	 data = alloc_mem( boss->com_pool );
-	data->list				= copy_list(List, boss);
-	data->SetList			= copy_list(SetList, boss);
-	data->Tried				= Tried;
-	data->limit 			= limit;
-	data->LimitReached	= LimitReached;
-	data->ClauseCount		= ClauseCount;
-	data->VariableCount	= VariableCount;
-	data->clause_size		= boss->clause_size;
-	data->variable_position = boss-> variable_position;
-	data->link_pool		= boss->link_pool;
-	data->node_pool		= boss->node_pool;
-	data->com_pool			= boss->com_pool;
-	data->job_mem			= boss->job_mem;
-	data->set_var			= boss->set_var;
-	data->set_variable		= boss->set_variable;
-	data->clause_connections = boss->clause_connections;
+	data->list						= copy_list(List   , boss);
+	data->SetList					= copy_list(SetList, boss);
+	data->Tried						= Tried;
+	data->limit 					= limit;
+	data->LimitReached			= LimitReached;
+	data->ClauseCount				= ClauseCount;
+	data->VariableCount			= VariableCount;
+	data->clause_size				= boss->clause_size;
+	data->variable_position 	= boss-> variable_position;
+	data->link_pool				= boss->link_pool;
+	data->node_pool				= boss->node_pool;
+	data->com_pool					= boss->com_pool;
+	data->job_mem					= boss->job_mem;
+	data->set_var					= boss->set_var;
+	data->set_variable			= boss->set_variable;
+	data->clause_connections	= boss->clause_connections;
+	data->var_tab					= boss->var_tab;
+	data->ret_value				= 0;
 	SearchAndCollect(data);
-	eval=0;
-	usleep(10);
-	WaitForWorkers(WorkerBees);
+	eval=data->ret_value;
 	
-	DestroySet( List	,boss);
-	DeleteSet( &SetList, boss);
-	DeleteSet( &Tried, boss);
-		reset(data->node_pool);
-		//reset(data->link_pool);
-		reset(data->com_pool);
-		reset(data->job_mem);
-		
-		defrag_mem(data->node_pool);
-		//defrag_mem(data->link_pool);
-		defrag_mem(data->com_pool);
-		defrag_mem(data->job_mem);
+	DeleteSet(&SetList, boss);
+	DeleteSet(&List, boss);
+	DeleteSet(&data->list, boss);
+	DeleteSet(&data->SetList, boss);
+	
 
-	//RemoveLastAssert();
+//	WaitForWorkers(WorkerBees);
+	
+	release_mem(data, boss->com_pool);
+	//debug_list(List);
+
+	RemoveLastAssert();
 	
 	if( eval==-1) {first=1;}
 	
+//printf("this size %li %i \n",SetList->data,	ListSize(SetList) );
 	 SetList  = NULL;
 	 Tried	  = NULL;
 	 List	  = NULL;
-	
-	//Assert_Variable( abs(TestVariable));
+	Assert_Variable( abs(TestVariable));
 		
 	SetList = CopySet( abs(TestVariable) ,f_variable_position, SetList, boss);
 	List    = CopySet( abs(TestVariable) ,f_variable_position, List, boss);
 
 	VariableCount = 0;
 	
-	 count 			  = NULL;
-	 PartTotal  	  = CollectConnections(SetList,boss);
-	 total			  = CollectConnections(PartTotal, boss);
-		VariableCount    = CountUniqueVariables(total, boss);
+	count 			  = NULL;
+	PartTotal=NULL;
+	PartTotal  	  = CollectConnections(SetList,boss);
+	total			  = CollectConnections(PartTotal, boss);
+	VariableCount    = CountUniqueVariables(total, boss);
 	
 	VariableCount   += CountUniqueVariables(PartTotal, boss);
 
@@ -633,46 +676,36 @@ while(1){
 
 	//graph_l* data;
 	data=NULL;
-//	graph_l* data;
 	//link_node* try_copy = copy_list(Tried);
 	//data = malloc(sizeof(*data));
 	 data = alloc_mem( boss->com_pool );
-	data->list				= copy_list(List, boss);
-	data->SetList			= copy_list(SetList, boss);
-	data->Tried				= Tried;
-	data->limit 			= limit;
-	data->LimitReached	= LimitReached;
-	data->ClauseCount		= ClauseCount;
-	data->VariableCount	= VariableCount;
-	data->clause_size		= boss->clause_size;
-	data->variable_position = boss->variable_position;
-	data->clause_connections = boss->clause_connections;
-	data->set_variable		= boss->set_variable;
-	data->link_pool		= boss->link_pool;
-	data->node_pool		= boss->node_pool;
-	data->com_pool			= boss->com_pool;
-	data->job_mem			= boss->job_mem;
-	data->set_var			= boss->set_var;
-	data->set_var			= boss->set_var;
-	SearchAndCollect(data );
+	data->list						= copy_list(List   , boss);
+	data->SetList					= copy_list(SetList, boss);
+	data->Tried						= Tried;
+	data->limit 					= limit;
+	data->LimitReached			= LimitReached;
+	data->ClauseCount				= ClauseCount;
+	data->VariableCount			= VariableCount;
+	data->clause_size				= boss->clause_size;
+	data->variable_position 	= boss-> variable_position;
+	data->link_pool				= boss->link_pool;
+	data->node_pool				= boss->node_pool;
+	data->com_pool					= boss->com_pool;
+	data->job_mem					= boss->job_mem;
+	data->set_var					= boss->set_var;
+	data->set_variable			= boss->set_variable;
+	data->clause_connections	= boss->clause_connections;
+	data->var_tab					= boss->var_tab;
+	data->ret_value				= 0;
+	SearchAndCollect(data);
 	
-	WaitForWorkers(WorkerBees);
-		
-	DestroySet	( List, boss);
-	DeleteSet	( &SetList, boss );
-	DeleteSet	( &Tried ,boss);
-reset(data->node_pool);
-		//reset(data->link_pool);
-		reset(data->com_pool);
-		reset(data->job_mem);
-		
-		defrag_mem(data->node_pool);
-		//defrag_mem(data->link_pool);
-		defrag_mem(data->com_pool);
-		defrag_mem(data->job_mem);
-	eval=0;
+	DeleteSet(&SetList, boss);
+	DeleteSet(&List, boss);
+	DeleteSet(&data->list, boss);
+	DeleteSet(&data->SetList, boss);
+	eval=data->ret_value;
 	
-	//RemoveLastAssert();
+	RemoveLastAssert();
 	
 	if( eval  == -1 ) second = 1;
 	
@@ -700,7 +733,7 @@ reset(data->node_pool);
 					sub_con = CollectConnections(sub_con,boss);
 					sub_con = CollectConnections(sub_con,boss);
 					RemoveAfromB(sub_con, &tested,boss);
-					DestroySet(sub_con,boss);
+					DeleteSet(&sub_con,boss);
 					sub_con=NULL;
 					
 					//RemoveLastAssert();
@@ -727,21 +760,21 @@ reset(data->node_pool);
 		sub_con = CollectConnections(sub_con,boss);
 		sub_con = CollectConnections(sub_con,boss);
 		RemoveAfromB(sub_con, &tested, boss);
-		DestroySet(sub_con,boss);
+		DeleteSet(&sub_con,boss);
 		sub_con=NULL;
 		
-		//Assert_Variable(abs(TestVariable) );
+		Assert_Variable(abs(TestVariable) );
 		printf("count %i, variable %i \n",ones[0], abs(TestVariable));
-		
+		//halt();
 		// This is for saving progress!
-		/*
-		raw();
+		
+	//	raw();
 
 		char raw[20]="saved";
 		
-		Export(set, raw);
-		ResetSolve(set);
-		*/
+	//	Export(set, raw);
+	//	ResetSolve(arg_t);
+		
 		first =0;
 	}
 	
@@ -751,23 +784,26 @@ reset(data->node_pool);
 		sub_con = CollectConnections(sub_con,boss);
 		RemoveAfromB(sub_con, &tested,boss);
 		
-		DestroySet(sub_con,boss);
+		DeleteSet(&sub_con,boss);
 		sub_con=NULL;
-		//Assert_Variable(-abs(TestVariable) );
+		Assert_Variable(-abs(TestVariable) );
 		printf("count %i, variable %i \n",ones[0], -abs(TestVariable));
-		
+		//halt();
 		// This is for testing purposes!
 		
-		/*
-		raw();
+		
+	//	raw();
 
-		char raw[20]="saved";
-		Export(set, raw);
-		ResetSolve(set);
-				*/
+	//	char raw[20]="saved";
+	//	Export(set, raw);
+	//	ResetSolve(arg_t);
+				
 		second =0;
 
 	}
+	
+	
+	//if(ones[0]==50) exit(0);
 	
 }
 //	AbortWork(WorkerBees);

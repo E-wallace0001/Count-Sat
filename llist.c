@@ -27,7 +27,6 @@ link_node* link_create(int data, link_node* previous, link_node* next,com_line* 
 
 link_node* link_append(int data,link_node* head,com_line* Coms){
 	link_node* new_node=link_create(data, head,NULL, Coms);
-
 	if(head!=NULL ){
 	
 		head=head->first->end;
@@ -51,9 +50,8 @@ link_node* copy_list(link_node* list,com_line* Coms){
 
 //	if(list==NULL){ printf("null list copy \n"); exit(0);}
 
+
 	list=list->first;
-	//new_list->end=new_list;
-	//new_list->first=new_list;
 	while(list!=NULL){
 		if(list->data!=0){
 			new_list=link_append(list->data, new_list,Coms);
@@ -61,7 +59,6 @@ link_node* copy_list(link_node* list,com_line* Coms){
 		if(list->next==NULL) break;
 		list=list->next;
 	}
-	//new_list->first->end=new_list;
 	return new_list;
 
 }
@@ -86,6 +83,7 @@ if((*cursor)->previous!=NULL){
 	(*cursor)->first->end=(*cursor);
 	(*cursor)->next=NULL;
 	release_mem((*cursor), Coms->link_pool);
+	*cursor=NULL;
 }else{
 	if((*cursor)->next!=NULL){
 		printf("not end\n");
@@ -121,7 +119,6 @@ if((*cursor)->previous!=NULL){
 		next->previous=previous;
 		previous->next=next;
 		
-		//free(temp);
 	}else{
 		temp=(*cursor);
 		(*cursor)=(*cursor)->previous;
@@ -129,7 +126,6 @@ if((*cursor)->previous!=NULL){
 		(*cursor)->first->end=(*cursor);
 		(*cursor)->next=NULL;
 		
-		//free(temp);
 		
 		return (-1);
 	}
@@ -152,6 +148,7 @@ if((*cursor)->previous!=NULL){
 		temp->next->end=(*cursor);
 		//free(temp);
 		release_mem(temp, Coms->link_pool);
+		temp=NULL;
 	}else{
 		(*cursor)->data=0;
 		(*cursor)->next=NULL;
@@ -172,10 +169,10 @@ if((*cursor)==NULL){printf(" null ptr- link_pop\n"); exit(0);}
 link_node* temp;
 link_node* next;
 link_node* previous;
-		
 if((*cursor)->previous!=NULL){
 	
 	if((*cursor)->next!=NULL){
+	
 		next=(*cursor)->next;
 		previous=(*cursor)->previous;
 		temp=(*cursor);
@@ -185,6 +182,7 @@ if((*cursor)->previous!=NULL){
 		
 		//free(temp);
 		release_mem(temp, Coms->link_pool);
+		temp=NULL;
 	}else{
 		temp=(*cursor);
 		(*cursor)=(*cursor)->previous;
@@ -194,6 +192,7 @@ if((*cursor)->previous!=NULL){
 		
 		//free(temp);
 		release_mem(temp, Coms->link_pool);
+		temp=NULL;
 		return (-1);
 	}
 	
@@ -215,6 +214,7 @@ if((*cursor)->previous!=NULL){
 		temp->next->end=(*cursor);
 		//free(temp);
 		release_mem(temp, Coms->link_pool);
+		temp=NULL;
 
 	}else{
 		//(*cursor)->data=0;
@@ -223,6 +223,7 @@ if((*cursor)->previous!=NULL){
 		//(*cursor)=NULL;
 		//free(*cursor);
 		release_mem(*cursor, Coms->link_pool);
+		*cursor=NULL;
 		return (-1);
 	}
 
@@ -249,7 +250,6 @@ int RemoveFromList(link_node** cursor, com_line* Coms){
 			next->previous=previous;
 			previous->next=next;
 			
-			//free(temp);
 		}else{
 			temp=(*cursor);
 			(*cursor)=(*cursor)->previous;
@@ -257,7 +257,6 @@ int RemoveFromList(link_node** cursor, com_line* Coms){
 			(*cursor)->first->end=(*cursor);
 			(*cursor)->next=NULL;
 			
-			//free(temp);
 			
 			return (-1);
 		}
@@ -280,13 +279,14 @@ int RemoveFromList(link_node** cursor, com_line* Coms){
 			temp->next->end=(*cursor);
 			//free(temp);
 			release_mem(temp, Coms->link_pool);
-
+			temp=NULL;
 		}else{
 			(*cursor)->next=NULL;
 			(*cursor)->previous=NULL;
 			//(*cursor)=NULL;
 			//free(*cursor);
 			release_mem(*cursor, Coms->link_pool);
+			*cursor=NULL;
 			return (-1);
 		}
 
@@ -359,7 +359,9 @@ link_node* BinSort(link_node** Node,com_line* Coms){
 		(*Node)=(*Node)->next;
 		//free(tmp);
 		release_mem(tmp, Coms->link_pool);
+		tmp=NULL;
 	}
+	release_mem((*Node), Coms->link_pool);
 	//free(*Node);
 	*Node = NULL;
 	
@@ -413,8 +415,14 @@ link_node* GroupSingles( link_node* set ,com_line* Coms){
 			temp = iter->first;
 			
 			while(temp!=NULL){
+			
 				for( int variable = f_clause_size[ temp->data ]; variable != 0; variable--){
-					if( temp==iter){ temp=temp->next;continue;}
+					if( temp==iter ){ 
+						if(temp->next==NULL) break;
+						temp=temp->next;
+						continue;
+					}
+					
 					if( abs( f_variable_connections[temp->data][variable] ) == abs(f_variable_connections[ iter->data ][ 1 ])  ){
 						//printf( "found %i \n",f_variable_connections[temp->data][variable]);
 						
@@ -451,7 +459,7 @@ link_node* GroupSingles( link_node* set ,com_line* Coms){
 		iter=iter->next;
 	}
 
-DestroySet( tried ,Coms);
+DeleteSet( &tried ,Coms);
 	return set;
 }
 
@@ -570,7 +578,6 @@ if(set==NULL) return set;
 
 link_node* GroupSet( link_node* Node, com_line* Coms ){
 
-
 	Node							= Node->first;
 	link_node* temp			= NULL;
 	link_node* Mod				= NULL;
@@ -589,7 +596,6 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 	int limit					= 0;
 	bool brk						= 0;
 	int count 					= 0;
-
 	// Start from the end of the group, and work backwards
 	while(1){
 	
@@ -601,7 +607,7 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 
 		int Variable = 1;
 		
-		link_node** GroupSet	= CreateSet( Coms->f_clause_size[Group->data] );
+		link_node** GroupSet	= CreateSet( f_clause_size[Group->data], Coms );
 		
 
 		//ThisFunction searches all nodes before and collects those clauses
@@ -613,7 +619,7 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 			// select the variable with the most connections in total
 			while(1){
 
-				for( int v = Coms->f_clause_size[Group->data]; v!=0; v--){
+				for( int v = f_clause_size[Group->data]; v!=0; v--){
 					if( ExistInSet( v, appended ) == 1 ) continue;
 					
 					if( ListSize(GroupSet[v]) <= count && count!=0 || count ==0){
@@ -644,7 +650,8 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 				if(copy==NULL)continue;
 				
 				if( copy->data==0){
-					DestroySet(copy,Coms);
+					DeleteSet(&copy,Coms);
+					copy=NULL;
 					continue;
 				}
 				
@@ -655,10 +662,11 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 				var=0;
 			}
 			
-			FreeSet(GroupSet,Coms->f_clause_size[Group->data],Coms);
+			//FreeSet(GroupSet,f_clause_size[Group->data],Coms);
+			DeleteSet(GroupSet, Coms);
 			GroupSet=NULL;
 			
-		//	SetFirst(OrderedList);
+			//SetFirst(OrderedList);
 			
 
 			//if empty list, continue through the groups
@@ -668,19 +676,20 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 				continue;
 			}
 			
-			BinSort( &OrderedList, Coms);
 			
-			RemoveAfromB(OrderedList, &	Group, Coms);
-				
-			if(saved->previous==NULL){
+			;
+			BinSort( &OrderedList, Coms);
+			SetFirst(OrderedList);
+			
+			RemoveAfromB(OrderedList, &Group, Coms);
+			if(saved->first->previous==NULL){
 			
 				saved->first->previous=OrderedList->first->end;
-
-				saved->first->previous->next=saved;
-				
+				OrderedList->first->end->next=saved->first;
+				//saved->first->previous->next=saved;
+				saved->first=OrderedList->first;
 				OrderedList->first->previous= NULL;
-				
-			
+			//
 			}else{
 			
 				saved->previous->next=OrderedList->first;
@@ -688,23 +697,26 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 				saved->previous=OrderedList->first->end;
 				OrderedList->first->end->next=saved;
 				saved->first= OrderedList->first;
-					
 			}
 			SetFirst(saved);
+			OrderedList=NULL;
+			
+			//halt();
 			//
 			//inserts selected group in to the end of the group
-			OrderedList=NULL;
+			
 			
 			
 		if( saved->previous==NULL) break;
 	
 		saved=saved->previous;
-		Group=saved;;
+		Group=saved;
 	}
 	
-	DestroySet(appended,Coms);
-	appended=NULL;
-	DestroySet(list,Coms);
+//	DeleteSet(&appended,Coms);
+	//appended=NULL;
+//	DeleteSet(&list,Coms);
+//	list=NULL;
 	CheckFirstNode(OrderedList);
 	return saved;
 }
@@ -930,7 +942,7 @@ link_node* GroupTogether( link_node* Node,com_line* Coms){
 	
 		Group=Group->previous;
 	}
-	DestroySet(list,Coms);
+	DeleteSet(&list,Coms);
 	return Group;
 }
 
@@ -943,10 +955,12 @@ void DeleteList(link_node** cursor,com_line* Coms){
 		if((*cursor)->previous!=NULL){ break;}
 		(*cursor)=(*cursor)->previous;
 		//free((*cursor)->next);
-		//release_mem(*cursor, Coms->link_pool);
+		release_mem((*cursor)->next, Coms->link_pool);
+		(*cursor)->next=NULL;
 	}
 	//free((*cursor));
 	release_mem(*cursor, Coms->link_pool);
+	*cursor=NULL;
 }
 
 link_node* DeleteNode(link_node* cursor, com_line* Coms){
@@ -965,6 +979,7 @@ if((cursor)->previous!=NULL){
 		cursor->previous->next = (cursor)->next;
 		
 		release_mem(cursor, Coms->link_pool);
+		cursor=NULL;
 		return(temp);
 	}else{
 		temp=(cursor)->previous;
@@ -973,7 +988,7 @@ if((cursor)->previous!=NULL){
 		(cursor)->first->end=temp;
 		
 		release_mem(cursor, Coms->link_pool);
-		
+		cursor=NULL;
 		return (temp);
 	}
 	
@@ -993,6 +1008,7 @@ if((cursor)->previous!=NULL){
 		}
 		temp->first->end=(temp);
 		release_mem(cursor, Coms->link_pool);
+		cursor=NULL;
 		return (temp);
 
 	}else{

@@ -208,17 +208,18 @@ job_b* CreateWorkers( size_t num ){
 
 com_line* memory_init(){
 
+	
 	com_line* memory_initalize;
 	memory_initalize =  malloc( sizeof(com_line));
 	
-	int* clause_size= calloc(csize, sizeof(int*));
+	int* clause_size= calloc(vsize, sizeof(int*));
 	
 	//create a table for processing purposes
-	int **clause_connections = calloc(f_clause_count, sizeof(int*));
+	int **clause_connections = calloc(vsize, sizeof(int*));
 	
 	size_t i;
 	
-	for( i=0; i< f_clause_count; i++){
+	for( i=0; i< vsize; i++){
 		clause_connections[i] = calloc(90, sizeof(int*));
 	}
 	
@@ -231,10 +232,13 @@ com_line* memory_init(){
 
 	bool*		set_var								= calloc(csize, sizeof(bool));
 	int*		var_tab								= calloc(vsize, sizeof(int));
-	m_map*	node_pool							= init_mem( sizeof(node), 1024 );
+	m_map*	node_pool							= init_mem( sizeof(node), 4048 );
 	m_map*	link_pool							= init_mem( sizeof(link_node), 1024 );
 	m_map*	com_pool								= init_mem ( sizeof(com_line), 2048 );
-	m_map*	job_mem								= init_mem ( sizeof(job_t), 4048);
+	m_map*	job_mem								= init_mem ( sizeof(job_t), 1024);
+	
+//	int* var_tab									= calloc( vsize, sizeof(int));
+	
 	memory_initalize->node_pool				= node_pool;
 	memory_initalize->link_pool				= link_pool;
 	memory_initalize->com_pool					= com_pool;
@@ -245,6 +249,8 @@ com_line* memory_init(){
 	memory_initalize->variable_position		= variable_position;
 	memory_initalize->set_variable			= set_variable;
 	memory_initalize->set_var					= set_var;
+	memory_initalize->var_tab					= var_tab;
+	memory_initalize->ret_value 				= 0;
 	return memory_initalize;
 
 

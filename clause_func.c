@@ -112,7 +112,7 @@ void copy_removed(int this_clause,com_line* Coms){
 
 void RemoveFromClause(int this_clause,com_line* Coms){
 	
-	variable_pos* set		= Coms->set->first->end;
+	variable_pos* set		= Coms->set;
 
 
 //	printf(" copy remove this_clause %i %i \n",(*set)->clause, 0);
@@ -123,7 +123,7 @@ void RemoveFromClause(int this_clause,com_line* Coms){
 	}
 	
 	Coms->clause_size[this_clause]							= 0;
-	pop_clause(&(Coms->set->first->end),Coms);
+	pop_clause(&(Coms->set),Coms);
 }
 
 
@@ -141,7 +141,7 @@ void append_var_clause(int clause, int variable, com_line* Coms){
 
 	//store the variable at clause/variable num
 	Coms->clause_connections[ clause ][ Coms->clause_size[clause] ] = variable;
-}
+}	
 
 
 void pop_var_clause(int clause, int this_place, com_line* Coms){

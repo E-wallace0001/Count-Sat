@@ -171,7 +171,6 @@ variable_pos* SetNewIndex(link_node* list,variable_pos** set,int translation[], 
 	list=list->first;
 	
 		while(list!=NULL){
-		
 			PutMap( list->data, Location );
 			(*set)	= copy_clause(list->data,translation,Coms);
 			list=list->next;
@@ -296,7 +295,7 @@ link_node* RemoveDuplicateMembers( link_node** set,com_line* Coms){
 		 }
 		
 		checked=link_append(	abs(node->data), checked,Coms);
-		SetFirst(checked);
+		//SetFirst(checked);
 		if(node->next==NULL)break;
 		node=node->next;
 	}
@@ -351,11 +350,13 @@ void DeleteSet(link_node** set, com_line* Coms){
 	while(1){
 		if((*set)->previous==NULL){
 			release_mem((*set), Coms->link_pool);
+			(*set)=NULL;
 			return;
 		}
 		tmp=(*set);
 		(*set)=(*set)->previous;
 		release_mem(tmp, Coms->link_pool);
+		tmp=NULL;
 	}
 
 }
@@ -515,11 +516,11 @@ link_node* CollectConnections ( link_node* list,com_line* Coms){
 	list								= list->first;
 	variable_pos* temp			= NULL;
 	link_node* NewList			= NULL;
-	
+	//	printf(" this is the collectcollection %i  \n",ListSize ( list));	
 	while( 1 ){
 	
 		for( int variable=f_clause_size[list->data]; variable!=0; variable--){
-		
+		//printf(" f_variable_connections[%li][%i] %i \n",list->data, variable, f_variable_connections[list->data][variable]);
 			if( ExistInSet( abs( f_variable_connections[list->data][variable] ), VariableVisited) == 1  ) continue;
 			
 			VariableVisited=link_append(	abs(f_variable_connections[ list->data ] [ variable]), VariableVisited,Coms);
@@ -541,14 +542,14 @@ link_node* CollectConnections ( link_node* list,com_line* Coms){
 return NewList;
 }
 
-link_node** CreateSet( int size){
-exit(0);/*
+link_node** CreateSet( int size, com_line* Coms){
+
 	link_node** Set = ( link_node**)calloc(size, sizeof(link_node) );
 	
 	for(int i = 0; i <= size;i++){
 	
-		Set[i] = (link_node*)malloc(sizeof(link_node));
-		
+		Set[i] = alloc_mem(Coms->link_pool);
+		//Set[i] =(link_node*) malloc(sizeof(link_node));
 		Set[i]->previous= NULL;
 		Set[i]->next 	 = NULL;
 		Set[i]->first 	 = Set[i];
@@ -557,7 +558,7 @@ exit(0);/*
 	}
 	
 	return(Set);
-*/
+
 }
 
 void FreeSet( link_node** set, int size,com_line* Coms){
@@ -568,15 +569,18 @@ link_node* tmp=NULL;
 		list=set[i];
 		list=list->end;
 		while(1){
-			if( list->previous==NULL) break;
+			if( list->previous==NULL){
+				release_mem(list, Coms->link_pool);
+				list=NULL;
+				break;
+			}
 			tmp=list;
 			list=list->previous;	
 			//free( tmp);
 			release_mem(tmp, Coms->link_pool);
+			tmp=NULL;
 		}
 		
-		//free(set[i]);
-		release_mem(set[i], Coms->link_pool);
 	}
 
 	free(set);
@@ -588,7 +592,7 @@ int* CreateArray( int size){
 	return array;
 }
 
-void DestroyArray(int array[],com_line* Coms){
+void DestroyArray(int* array,com_line* Coms){
 	free(array);
 }
 
@@ -603,18 +607,20 @@ subset=subset->first->end;
 		subset=subset->previous;
 		//free(subset->next);
 		release_mem(subset->next, Coms->link_pool);
+		subset->next=NULL;
 	}
 	//free (subset);
 	release_mem(subset, Coms->link_pool);
+	subset=NULL;
 }
 
 void ResetSolve(com_line* Coms){
-	variable_pos* (set) = Coms->set->first->end;
+	 Coms->set = Coms->set->first->end;
 	while( 1 ){
 
-		RemoveFromClause( set->first->end->clause ,Coms);
+		RemoveFromClause( Coms->set->clause,Coms);
 		
-		if( set->first->end==NULL || set==NULL) break;
+		if( Coms->set==NULL ) break;
 		
 	}
 }
@@ -628,13 +634,15 @@ if(list==NULL) return NULL;
 	
 	while(1){
 
-		if(list->previous==NULL){break;}
+		if(list->previous==NULL){release_mem(list, Coms->link_pool);list=NULL;break;}
 		tmp = list;
 		list = list->previous;
 		
 		//free(tmp);
 		release_mem(tmp, Coms->link_pool);
+		tmp=NULL;
 	}
+	
 	list->next=NULL;
 	list->first->end= list;
 	
@@ -664,6 +672,7 @@ link_node* RemoveUntil(int End, link_node** list, com_line* Coms){
 		(*list)->next=NULL;
 		//free(tmp);
 		release_mem(tmp, Coms->link_pool);
+		tmp=NULL;
 		
 	}
 	(*list)->next=NULL;

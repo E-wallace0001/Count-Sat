@@ -25,7 +25,9 @@
 	m_granule* alloc_granule(m_map* map, void* address){
 		
 		m_granule* new_mem 		= make_granule();
-		
+		if( new_mem==NULL){ printf(" alloc granule erro\n");
+		exit(0);
+		}
 		new_mem->address			= address;
 		if( map->list_end==NULL){
 			map->list_start 		= new_mem;
@@ -40,7 +42,7 @@
 	}
 	
 	m_map* init_mem(size_t var_size, int quant){
-			quant+=1;
+			//quant+=1;
 			m_map* mem				= (m_map*)malloc( sizeof(m_map));
 			void* heap				= (void*)malloc( var_size * quant);
 			
@@ -51,7 +53,7 @@
 			
 			mem->var_size			= var_size;
 			mem->start				= (char*)heap;
-			mem->end 				= mem->start+(var_size*(quant));
+			mem->end 				= mem->start+(var_size*(quant+1));
 			mem->end_arena			= mem;
 			mem->previous_arena 	= NULL;
 			mem->list_end			= NULL;
@@ -89,12 +91,13 @@
 		}
 		heap->list_start				= heap->list_start->previous;
 		heap->list_start->address 	= address;
+		address=NULL;
 		
 	}
 	
 	void extend_mem(m_map** heap, m_granule** end){
 		m_map* arena;
-		arena 									= init_mem((*heap)->var_size, 200);
+		arena 									= init_mem((*heap)->var_size, 2000);
 		arena->var_size						= (*heap)->var_size;
 		arena->previous_arena				= (*heap)->end_arena;
 		(*heap)->end_arena					= arena;

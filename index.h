@@ -75,5 +75,7 @@ void FreeSet( link_node** , int,com_line*);
 link_node* RemoveInSet(int , link_node* , link_node** , int,com_line* );
 
 void CheckFirstNode( link_node*);
+
+link_node** CreateSet(int, com_line* );
 	
 #endif

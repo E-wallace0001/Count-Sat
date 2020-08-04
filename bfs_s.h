@@ -49,7 +49,7 @@ int new_old_clause[vsize];
 
 bool IsVariableSet[vsize];
 
-void Evaluate( void* );
+void* Evaluate( void* );
 
 bool VariableSet[vsize];
 

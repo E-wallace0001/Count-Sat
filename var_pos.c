@@ -50,8 +50,6 @@ variable_pos* create_clause(com_line* Coms){
 	variable_pos* tmp;
 	
 	
-	
-	
 	if(previous!=NULL ){
 
 		new_clause->previous		= previous;
