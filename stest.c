@@ -43,7 +43,7 @@ int f_clause_count=0;
 
 // table of placement of variables
 
-variable_pos* f_variable_position[csize];
+variable_pos* f_variable_position[csize*2];
 
 void init_position(variable_pos* table[]){
 	for(long int  i=1;i<vsize;i++){
@@ -74,7 +74,7 @@ for(long int  i=1;i<vsize;i++){
 //int clause_size[csize]={0};
 
 
-int f_clause_size[csize]={0};
+int f_clause_size[csize*2]={0};
 
 
 
@@ -1638,8 +1638,8 @@ int main(int argc, char *argv[]){
 	//scans file
 
 //int** f_variable_connections;
-f_variable_connections = calloc(vsize,sizeof(int**));
-for ( size_t i =0; i<vsize; i++){
+f_variable_connections = calloc(vsize*2,sizeof(int**));
+for ( size_t i =0; i<vsize*2; i++){
 	f_variable_connections[i] = calloc(90, sizeof(int**));
 }
 	// imports cnf into local memory

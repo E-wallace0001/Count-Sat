@@ -15,7 +15,7 @@ void init_position(struct variable_pos**);
 void destroy_position(struct variable_pos**);
 
 //struct variable_pos* variable_position[csize];
-struct variable_pos* f_variable_position[csize];
+struct variable_pos* f_variable_position[csize*2];
 
 
 
@@ -29,7 +29,7 @@ int OnesPlace[csize];
 
 int counted_for;
 //int clause_size[csize];
-int f_clause_size[csize];
+int f_clause_size[csize*2];
 
 
 //long set_variable[vsize];

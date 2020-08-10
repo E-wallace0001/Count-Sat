@@ -48,6 +48,8 @@ int CountUniqueVariables(link_node* ,com_line* );
 
 link_node* CollectConnections ( link_node*, com_line*);
 
+link_node* ConnectedVariables ( int variable, com_line* Coms);
+
 int* CreateArray(int);
 
 void DestroyArray(int [],com_line*);

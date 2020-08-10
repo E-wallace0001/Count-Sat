@@ -662,8 +662,8 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 				var=0;
 			}
 			
-			//FreeSet(GroupSet,f_clause_size[Group->data],Coms);
-			DeleteSet(GroupSet, Coms);
+			FreeSet(GroupSet,f_clause_size[Group->data],Coms);
+			//DeleteSet(GroupSet, Coms);
 			GroupSet=NULL;
 			
 			//SetFirst(OrderedList);
@@ -679,7 +679,7 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 			
 			;
 			BinSort( &OrderedList, Coms);
-			SetFirst(OrderedList);
+			//SetFirst(OrderedList);
 			
 			RemoveAfromB(OrderedList, &Group, Coms);
 			if(saved->first->previous==NULL){
@@ -713,11 +713,11 @@ link_node* GroupSet( link_node* Node, com_line* Coms ){
 		Group=saved;
 	}
 	
-//	DeleteSet(&appended,Coms);
+	DeleteSet(&appended,Coms);
 	//appended=NULL;
-//	DeleteSet(&list,Coms);
+	DeleteSet(&list,Coms);
 //	list=NULL;
-	CheckFirstNode(OrderedList);
+//	CheckFirstNode(OrderedList);
 	return saved;
 }
 

@@ -238,6 +238,10 @@ com_line* memory_init(){
 	m_map*	job_mem								= init_mem ( sizeof(job_t), 1024);
 	
 //	int* var_tab									= calloc( vsize, sizeof(int));
+
+//	hash_t* h_table = hasht_create(257);
+	
+//	memory_initalize->h_table					= h_table
 	
 	memory_initalize->node_pool				= node_pool;
 	memory_initalize->link_pool				= link_pool;

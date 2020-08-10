@@ -14,6 +14,8 @@
 #include "bfs_s.h"
 #include "m_map.h"
 
+#include "h_table.h"
+
 
 // 45.344
 
@@ -186,7 +188,6 @@ link_node* FindMembers( int data, variable_pos* set[], link_node* subset,int tra
 	if( set == NULL ){ printf("FindMembers- NULL Data \n"); exit(0); }
 	if( set[data] == 0 ){  return NULL; }
 
-	
 	variable_pos* ptr;
 	
 	ptr = set[data]->first;
@@ -202,22 +203,25 @@ link_node* FindMembers( int data, variable_pos* set[], link_node* subset,int tra
 
 int CountUniqueVariables(link_node* group, com_line* Coms){
 
-link_node* list=NULL;
 int count=0;
 group=group->first;
+
+hash_t* h_table = hasht_create(267);
+
 while(group!=NULL){
 
 	for(int variable=f_clause_size[group->data]; variable!=0;variable--){
-	if( ExistInSet( abs(f_variable_connections[ group->data ] [ variable]),list ) ==1) {continue;}
+	
+	if( check_table( abs(f_variable_connections[ group->data ] [ variable]) , h_table) ==1) {continue;}
 
-	list=link_append(	abs(f_variable_connections[ group->data ] [ variable]), list,Coms);
+	table_add( abs(f_variable_connections[ group->data ] [ variable]),  h_table);
 	count++;
 	
 	}
 group=group->next;
 }
 
-DeleteSet(&list, Coms);
+hash_t_destroy( &h_table );
 return (count);
 }
 
@@ -281,25 +285,30 @@ link_node* RemoveDuplicateMembers( link_node** set,com_line* Coms){
 	link_node* checked=NULL;
 	link_node* next;
 	
+	hash_t* h_table = hasht_create(257);
+	
 	while(1){
 
-		if(ExistInSet( abs( node->data), checked)==1){	
-			//printf("node data %li \n", node->data);
-			next=node->next;
-			node=	DeleteNode(node,Coms); 
-			if(next==NULL) break;
-			node=next;
-			next=NULL;
+		if( check_table( abs(node->data ),  h_table) == 1){	
+		
+			next = node->next;
+			node = DeleteNode(node,Coms); 
+			
+			if(next == NULL)
+				break;
+			node = next;
+			next = NULL;
 			continue;
+		}
 		
-		 }
-		
-		checked=link_append(	abs(node->data), checked,Coms);
-		//SetFirst(checked);
-		if(node->next==NULL)break;
+		table_add( abs(node->data),  h_table);
+
+		if(node->next==NULL)
+			break;
+
 		node=node->next;
 	}
-	DeleteSet(&checked->first->end,Coms);
+	hash_t_destroy( &h_table );
 	return node;
 }
 
@@ -512,34 +521,67 @@ link_node* CollectConnections ( link_node* list,com_line* Coms){
 
 	if(list==NULL) exit(0);
 
-	link_node* VariableVisited	= NULL;
 	list								= list->first;
 	variable_pos* temp			= NULL;
 	link_node* NewList			= NULL;
+	
+	hash_t* h_table = hasht_create(257);
+
+
 	//	printf(" this is the collectcollection %i  \n",ListSize ( list));	
 	while( 1 ){
 	
-		for( int variable=f_clause_size[list->data]; variable!=0; variable--){
-		//printf(" f_variable_connections[%li][%i] %i \n",list->data, variable, f_variable_connections[list->data][variable]);
-			if( ExistInSet( abs( f_variable_connections[list->data][variable] ), VariableVisited) == 1  ) continue;
-			
-			VariableVisited=link_append(	abs(f_variable_connections[ list->data ] [ variable]), VariableVisited,Coms);
-
-			temp = f_variable_position[ abs(f_variable_connections[list->data][variable]) ];
+		for( int variable = f_clause_size[list->data]; variable!=0; variable--){
+		
+			if( check_table( abs(f_variable_connections[list->data][variable]), h_table) == 1  )
+				 continue;
+			table_add( abs( f_variable_connections[list->data][variable] ),  h_table);
+			//VariableVisited	= link_append(	abs(f_variable_connections[ list->data ] [ variable]), VariableVisited,Coms);
+			temp 					= f_variable_position[ abs(f_variable_connections[list->data][variable]) ];
 			
 			while(1){
-				NewList=link_append(temp->clause,NewList,Coms);
-				if(temp->next==NULL) break;
-				temp=temp->next;
+				NewList = link_append(temp->clause,NewList,Coms);
+				if(temp->next == NULL) 
+					break;
+				temp = temp->next;
 			}
 		}
-		if(list->next==NULL) break;
+		if(list->next == NULL) break;
 		
-		list=list->next;
+		list = list->next;
 	}
-	DeleteSet(&VariableVisited,Coms);
-	//JoinSet( NewList, list);
+
+hash_t_destroy( &h_table );
+
 return NewList;
+}
+
+link_node* ConnectedVariables ( int variable, com_line* Coms){
+
+	link_node* VariableVisited	= NULL;
+	variable_pos* temp			= f_variable_position[ abs(variable) ];
+	
+	
+	hash_t* h_table = hasht_create(267);
+
+
+
+	
+			
+	while(1){
+		for( int variable2 = f_clause_size[temp->clause]; variable2!=0; variable2--){
+			if(  check_table(  abs( f_variable_connections[temp->clause][variable2] ),  h_table) == 1  )
+				continue;
+
+			table_add( abs( f_variable_connections[temp->clause][variable2] ),  h_table);
+			VariableVisited = link_append( abs( f_variable_connections[temp->clause][variable2] ), VariableVisited,Coms);
+		}
+		if(temp->next == NULL) 
+			break;
+		temp = temp->next;
+	}
+hash_t_destroy( &h_table );
+return VariableVisited;
 }
 
 link_node** CreateSet( int size, com_line* Coms){
