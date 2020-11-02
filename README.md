@@ -12,5 +12,5 @@ To use
 Count Sat as only been tested on Ubuntu 20.04.
 in the terminal, run ./countSat , followed by a .cnf file.
 
-Compilation
+Compilation \n
 This software require GNU MP bignum installed, and can be compiled using ./make.sh
