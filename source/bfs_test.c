@@ -161,8 +161,6 @@ return(0);
 
 
 
-
-
 void SearchAndCollect(void* arg_a){
 
 if( arg_a ==NULL) exit(0);
