@@ -13,4 +13,4 @@ Count Sat as only been tested on Ubuntu 20.04.
 in the terminal, run ./CountSat , followed by a .cnf file.
 
 ## Compilation
-This software require GNU MP bignum installed, and can be compiled using ./make.sh
+This software require GNU MP bignum installed ( https://gmplib.org/#DOWNLOAD )  and can be compiled using ./make.sh
