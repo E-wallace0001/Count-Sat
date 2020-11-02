@@ -1,0 +1,49 @@
+Translation
+	conversion between 2 sets of addresses, typically the MASTER SET to derived set
+	
+									MASTER							
+							    //	  \\
+						 	   \/		   \/
+			 			Derived GRP		Derived GRP
+						 	  ||	
+							  \/
+						 Derived GRP
+								
+
+SetIndex_LH(list, set, Translation)
+	Takes member of a link_node* list, copys list data over to a new set in order.
+
+SetIndex( address, data, position[] )
+	Stores the address of the data by refference fo the data , in position[]
+
+CreateIndex( size )
+	Creates a table of pointers to store pointers to cross correlate address and data
+		returns variable_pos** 
+		*variable_pos[]
+		
+FreeIndex( index)
+	Removes all members of the index and frees the table
+	
+FindMembers( data, set )
+	Returns address of all data in set
+	
+CreateGroup( list, set, translate[] )
+	Creates a new group index from list of clauses.
+
+RemoveGroup( group[], size )
+	frees members of sets, and group
+
+RemoveLastMember( set )
+	Removers last member of set
+	
+RemoveDuplicateMembers( set )
+	Removes duplicate members of set
+
+for to be solved, add to set, and old_new_clause
+
+
+Group	-> Set -> Reference to set operator
+
+
+AddLists
+	Joins two lists in to a new list. old lists are preserverd!
