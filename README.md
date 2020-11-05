@@ -8,9 +8,9 @@ This release will try and count all of the solotuions, without finding individua
 
 The computational complexity and space complexity of this algorithm are equal. Large interconnected problems will overrun memory very quickly.
 
-To use
+## To use
 Count Sat as only been tested on Ubuntu 20.04.
-in the terminal, run ./countSat , followed by a .cnf file.
+in the terminal, run ./CountSat , followed by a .cnf file.
 
-Compilation
-This software require GNU MP bignum installed, and can be compiled using ./make.sh
+## Compilation
+This software require GNU MP bignum installed ( https://gmplib.org/#DOWNLOAD )  and can be compiled using ./make.sh
